@@ -398,11 +398,20 @@ const App = () => {
   const handleSubmit = async () => {
     setIsLoading(true);
     try {
-      // Here we would normally send to backend API
-      // For now, simulate API call
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      // Save trip preferences via API
+      const result = await saveTripPreferencesDemo({
+        user_name: formData.userName,
+        origin: formData.origin,
+        destination: formData.destination,
+        start_date: formData.startDate,
+        end_date: formData.endDate,
+        budget: formData.budget
+      });
+      
+      console.log('Trip preferences saved:', result);
       setSubmitSuccess(true);
     } catch (error) {
+      console.error('Failed to save preferences:', error);
       setErrors({ submit: "Failed to save preferences. Please try again." });
     } finally {
       setIsLoading(false);
