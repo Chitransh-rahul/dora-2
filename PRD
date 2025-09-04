@@ -1,0 +1,172 @@
+# **Product Requirements Document (PRD): Dora**
+
+**Version:** 1.0
+**Date:** October 26, 2023
+**Author:** [Product Manager Name]
+**Status:** Draft
+
+## **1. Overview & Product Vision**
+
+### **1.1. Problem Statement**
+Travelers planning a trip are overwhelmed by the fragmented nature of online travel planning. They spend hours across dozens of websites (flight aggregators, hotel booking sites, review platforms, travel blogs) to research, compare prices, and build a coherent plan. This process is time-consuming, inefficient, and often leads to decision fatigue and fear of missing out on better options.
+
+### **1.2. Vision Statement**
+To become the most trusted, comprehensive, and efficient single platform for travelers to create a personalized, actionable, and bookable travel plan, saving them hours of research and providing peace of mind.
+
+### **1.3. Product Summary**
+Dora is a web application that generates hyper-personalized, detailed travel itineraries through a structured form. It synthesizes dynamic, real-time data (flights, hotels) with AI-generated and curated travel knowledge into a single, downloadable plan. It monetizes via affiliate commissions from integrated travel service APIs.
+
+## **2. Goals & Objectives**
+
+### **2.1. Primary Goals (MVP Launch)**
+*   **User Goal:** Reduce average trip planning time from 5+ hours to under 10 minutes for a structured itinerary.
+*   **Business Goal:** Achieve a 2% conversion rate from itinerary generation to user sign-up.
+*   **Technical Goal:** Achieve 99.5% uptime for the core itinerary generation service with a sub-5-second response time.
+
+### **2.2. Secondary Goals (Post-MVP)**
+*   Increase average affiliate link click-through rate (CTR) to 5%.
+*   Achieve a user satisfaction (CSAT) score of 4.5/5.
+*   Expand API adapter coverage to include 3+ providers for each category (flights, hotels, activities).
+
+## **3. User Personas & Stories**
+
+### **3.1. Primary Persona: "The Meticulous Planner" - Sarah**
+*   **Demographic:** 30-45, professional, tech-savvy.
+*   **Goals:** Wants a comprehensive, optimized, and stress-free travel experience. Values her time and seeks the best value for her budget.
+*   **Frustrations:** Hates switching between 10+ tabs. Worries she's missing a better hotel deal or a must-see attraction. Finds most itinerary tools too generic.
+*   **Scenario:** Sarah is planning a 7-day family trip to Italy. She knows the dates and has a budget but doesn't know the best flight routes, which family-friendly hotels are in a convenient location, or how to structure her days.
+
+### **3.2. User Stories**
+*   **As** Sarah, **I want** to input my travel preferences (destination, dates, budget, style) into a simple form **so that** I can get a tailored itinerary without manual research.
+*   **As** Sarah, **I want** to see real-time flight and hotel options with prices and booking links **so that** I can make informed decisions and book immediately.
+*   **As** Sarah, **I want** to receive a beautiful, downloadable PDF of my itinerary **so that** I can have it offline and share it with my travel companions.
+*   **As** a first-time user, **I want** to see a preview of my itinerary before creating an account **so that** I trust the service is valuable.
+
+## **4. Functional Requirements**
+
+### **4.1. Core User Flow & Features (MVP Scope)**
+
+| Feature / Component | Description | Requirements & Acceptance Criteria |
+| :--- | :--- | :--- |
+| **1. Multi-Step Input Form** | A responsive, intuitive form that collects user trip parameters. | **AC1:** Form must include: `user_name`, `origin_city` (w/ Google Places autocomplete), `destination` (w/ autocomplete, multi-select for later), `travel_dates` (range picker), `travel_theme` (dropdown), `party_size` (number, with breakdown), `budget_per_person` (numeric input with currency selector). <br> **AC2:** Must have a progress indicator. <br> **AC3:** Form validation must provide clear error messages. |
+| **2. Itinerary Generation Engine** | The backend service that orchestrates data fetching and synthesis. | **AC1:** Must make parallel API calls to Skyscanner and Booking.com upon form submission. <br> **AC2:** Must apply basic business logic: filter hotels by `theme` (e.g., "Family" filters for family-friendly amenities), rank flights by price and duration. <br> **AC3:** Must compile API responses into a structured JSON schema for the itinerary. <br> **AC4:** Must handle API errors gracefully (e.g., show a generic "No flights found" message instead of crashing). |
+| **3. On-Screen Itinerary Preview** | A non-downloadable, detailed preview shown after form submission. | **AC1:** Must display a day-by-day breakdown. <br> **AC2:** Must show key data: flight options (top 3), hotel options (top 3), a sample activity. <br> **AC3:** All prices and deep-links must be visible and clickable. <br> **AC4:** Must include a prominent "Download as PDF" button that triggers the auth gate. |
+| **4. Authentication Gate** | A modal that intercepts the PDF download action to require user sign-up. | **AC1:** Must be triggered **only** by the "Download PDF" action. <br> **AC2:** Must offer sign-up/login via Email/Password and Google OAuth. <br> **AC3:** Upon successful auth, the PDF download must begin automatically. |
+| **5. PDF Generation & Delivery** | Service that creates a branded, printable PDF from the itinerary JSON. | **AC1:** PDF must be well-designed, include the Dora logo, and all user-specific data. <br> **AC2:** Must contain all affiliate links from the preview. <br> **AC3:** Must be generated and served to the user within 10 seconds of auth completion. |
+
+### **4.2. Future Features (Out of MVP Scope)**
+*   Multi-destination itineraries.
+*   User accounts with saved itinerary history.
+*   Real-time price alerts for flights.
+*   Social sharing of itineraries.
+*   "Concierge" booking service (premium tier).
+*   Expanded Activity and Utility API integrations (Google Places, Tripadvisor, eSIMs, etc.).
+*   Enhanced AI synthesis for daily activity scheduling.
+
+## **5. Non-Functional Requirements**
+
+*   **Performance:** Full itinerary generation (form submission to on-screen preview) must complete within 5 seconds.
+*   **Reliability:** The application must have 99.5% uptime. External API failures should not crash the service.
+*   **Security:** All user data (especially PII from the form) must be encrypted in transit (TLS 1.2+). Passwords must be hashed and salted.
+*   **Scalability:** The architecture must be designed to handle a spike in traffic (e.g., holiday season) without degradation of service.
+*   **Maintainability:** The external API integration layer **must** be built using the Adapter Pattern to allow for easy swapping or addition of new providers.
+
+## **6. System Architecture & Technical Specifications**
+
+### **6.1. High-Level Architecture Diagram**
+```
+[User Browser] <-> [Frontend (Next.js App)]
+                          |
+                          V
+             [Backend Orchestrator (Node.js/Express)]
+                          |
+          +---------------+----------------+-----------------+
+          |               |                |                 |
+          V               V                V                 V
+[Flight Adapter]  [Hotel Adapter]   [LLM Adapter]    [Utility Links DB]
+     |                 |                 |                 |
+     V                 V                 V                 V
+[Skyscanner API] [Booking.com API] [OpenAI API]      [Internal Data]
+```
+
+### **6.2. Data Schema (Itinerary JSON Structure - Example)**
+```json
+{
+  "user": { "name": "Sarah", "budget": 1500, "currency": "USD", "theme": "Family" },
+  "trip": { "origin": "JFK", "destination": "FCO", "start_date": "2024-06-01", "end_date": "2024-06-08" },
+  "flights": [
+    {
+      "airline": "Delta",
+      "price": 650,
+      "deep_link": "https://skyscanner.partner.link/...",
+      "departure_time": "08:00",
+      "arrival_time": "22:30"
+    }
+  ],
+  "accommodations": [
+    {
+      "name": "Family Resort Rome",
+      "price_per_night": 200,
+      "deep_link": "https://booking.partner.link/...",
+      "amenities": ["Pool", "Kids Club", "Breakfast Included"]
+    }
+  ],
+  "itinerary_days": [
+    {
+      "day": 1,
+      "date": "2024-06-01",
+      "summary": "Arrival and check-in.",
+      "activities": [
+        {
+          "type": "Travel",
+          "description": "Flight from JFK to FCO",
+          "details": "Delta DL 123, Arrives 22:30"
+        }
+      ]
+    }
+  ],
+  "destination_info": {
+    "introduction": "Generated by LLM: Rome, the Eternal City...",
+    "packing_tips": ["Pack comfortable walking shoes..."]
+  },
+  "utility_links": {
+    "visa_info": "https://doratravel.com/guides/italy-visa-usa",
+    "sim_cards": "https://partner.airalo.com/italy"
+  }
+}
+```
+
+## **7. Monetization & Business Metrics**
+
+*   **KPI 1:** **User Acquisition Cost (CAC)**
+*   **KPI 2:** **Sign-up Conversion Rate** (from preview to auth)
+*   **KPI 3:** **Affiliate Link Click-Through Rate (CTR)**
+*   **KPI 4:** **Effective Commission Per Mille (eCPM)** from affiliate partners.
+*   **KPI 5:** **User Retention Rate** (for future features: how many users return to create a second itinerary?).
+
+## **8. Timeline & Milestones**
+
+### **Phase 1: MVP (Weeks 1-8)**
+*   **M1:** Frontend form and preview UI completed.
+*   **M2:** Backend orchestrator core logic completed.
+*   **M3:** Integration of Skyscanner & Booking.com APIs.
+*   **M4:** Basic PDF generation and Auth0 integration.
+*   **M5:** Internal Testing & QA.
+*   **M6:** **Launch MVP to limited public beta.**
+
+### **Phase 2: Iteration & Scale (Weeks 9-16)**
+*   Integrate Google Places API for Activities.
+*   Implement robust error handling and caching.
+*   Begin user acquisition and marketing efforts.
+*   Analyze metrics and user feedback for Phase 3 planning.
+
+## **9. Open Questions & Risks**
+
+*   **Risk:** Affiliate API terms of service may restrict how data is displayed or used.
+    *   **Mitigation:** Legal review of all API TOS before integration.
+*   **Risk:** High latency from external APIs could degrade user experience.
+    *   **Mitigation:** Implement aggressive caching for destination data and use asynchronous loading with spinners.
+*   **Risk:** LLM generates inaccurate or unsafe information.
+    *   **Mitigation:** Strict prompt engineering with guardrails and a blocklist. Clear disclaimers on the output.
+*   **Question:** What is the precise business logic for filtering and ranking? (e.g., How is a "Luxury" hotel defined vs. a "Budget" one?)
+    *   **Next Step:** Define detailed rules for each `theme` based on API data points (e.g., star rating, price tier, amenities).
