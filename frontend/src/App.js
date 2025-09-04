@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Check } from 'lucide-react';
+import { saveTripPreferencesDemo, checkHealth } from './api';
 
 // Foundation Components (from Checkpoint 1)
 const GlobalLayout = ({ children }) => {
