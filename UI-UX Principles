@@ -1,0 +1,121 @@
+### **Guiding Design Principles**
+
+*   **Clarity & Simplicity:** The interface should feel effortless. The user's goal is to get a plan, not to learn a complex app.
+*   **Trust & Credibility:** The design should feel professional and reliable, assuring users that the generated itinerary is intelligent and valuable.
+*   **Guided Journey:** The multi-step form should feel progressive and rewarding, not overwhelming.
+*   **Delight:** Small touches like thoughtful micro-interactions, a beautiful PDF, and clear feedback will make the product stand out.
+
+---
+
+### **Global Styles & Foundation (Milestone 0)**
+
+These styles will be configured in `globals.css` and form the foundation of all components.
+
+*   **Color Palette:**
+    *   **Primary:** `#2563eb` (A confident, trustworthy blue)
+    *   **Primary Hover:** `#1d4ed8` (A darker shade of the primary blue)
+    *   **Background:** `#ffffff` (Pure white for clarity)
+    *   **Surface:** `#f8fafc` (A very subtle grey for card backgrounds)
+    *   **Foreground / Text:** `#0f172a` (A near-black for high contrast)
+    *   **Muted Text:** `#64748b` (A medium grey for labels and secondary text)
+    *   **Border:** `#e2e8f0` (A light grey for subtle separations)
+    *   **Success:** `#16a34a` (Green for positive actions)
+    *   **Error:** `#dc2626` (Red for errors and warnings)
+*   **Font Stack:**
+    *   **Headings:** `Inter`, sans-serif; (Bold weights: `600`, `700`) - Modern and highly readable.
+    *   **Body Text:** `Inter`, sans-serif; (Regular weight: `400`)
+    *   **Monospace:** `JetBrains Mono`, monospace; (For any code snippets, if needed)
+*   **Spacing Scale (Tailwind Default Recommended):**
+    *   Based on a `4px` unit (`1unit = 0.25rem`).
+    *   **Common Sizes:** `2 (0.5rem)`, `4 (1rem)`, `6 (1.5rem)`, `8 (2rem)`, `12 (3rem)`
+*   **Border Radius:**
+    *   **Default:** `0.5rem` (For cards, modals, buttons)
+    *   **Small:** `0.375rem` (For input fields)
+    *   **Large:** `1rem` (For marketing sections, if any)
+*   **Shadows:**
+    *   **Small:** `shadow-sm` (For inputs)
+    *   **Medium:** `shadow-md` (For cards, dropdowns)
+    *   **Large:** `shadow-lg` (For modals, the preview panel)
+
+---
+
+### **Milestone 1: Static Itinerary Generator (Weeks 2-3)**
+
+#### **Feature: Multi-Step Form**
+*   **User Journey:** The user lands on the homepage, which is primarily the form. They are guided through a linear process: 1) Destination & Dates, 2) Travel Preferences, 3) Review. A progress bar keeps them informed.
+*   **UI Components:**
+    *   **Progress Stepper:** Horizontal bar at the top with labels (e.g., "Trip," "Preferences," "Review") and highlighted steps.
+    *   **Card:** The form is contained within a centered card with a medium shadow (`shadow-md`).
+    *   **Input Fields:** Full-width, with a light border, small border radius, and padding. Labels are above inputs in muted text.
+    *   **Buttons:** "Next" button is primary blue and on the right. "Back" button is a secondary (border-only) style on the left.
+*   **UX Best Practices:**
+    *   **Smart Defaults:** Pre-fill `user_name` from a cookie if possible later. Default `party_size` to 2.
+    *   **Validation:** Validate on "Next." Invalid fields get a red border and a short, specific error message below the field (e.g., "Please select a return date.").
+    *   **Feedback:** Buttons should show a loading spinner and be disabled while the "next" action is processing (even with mock data, to build the habit).
+
+#### **Feature: Itinerary Preview**
+*   **User Journey:** After submitting the form, the user sees a loading skeleton for 1-2 seconds (simulating work), then the preview slides in or fades in.
+*   **UI Components:**
+    *   **Preview Card:** A prominent card using the surface background color (`bg-slate-50`).
+    *   **Day Tabs:** Horizontal tabbed interface for "Day 1," "Day 2," etc. Active tab is underlined with the primary color.
+    *   **Itinerary Item:** Each activity/hotel/flight is a list item (`<li>`) with an icon (e.g., 🛫 for flight, 🏨 for hotel), time, title, and description. Affiliate links are styled as primary buttons ("Book Now").
+    *   **Download Button:** A large, high-contrast button with a download icon. It should look clickable and important.
+*   **UX Best Practices:**
+    *   **Scannability:** Use plenty of whitespace and icons to make the dense information easy to scan.
+    *   **Clear CTAs:** Affiliate links must be obvious buttons. The primary CTA is "Download as PDF."
+    *   **Responsiveness:** On mobile, the day tabs might scroll horizontally. The card should stack nicely.
+
+---
+
+### **Milestone 2: Backend Orchestrator & API Adapters (Weeks 4-5)**
+
+*(UI/UX for this milestone is about handling the transition from static to dynamic data.)*
+
+*   **User Journey:** Unchanged from M1, but now the loading state after form submission is real.
+*   **UI Components:**
+    *   **Loading State:** A more detailed skeleton loader that mimics the structure of the actual itinerary preview (e.g., lines of text for titles, rectangles for images) builds confidence that something is happening.
+*   **UX Best Practices:**
+    *   **Error States:** Design for API failures. If the flight API fails, the preview should still show, but the flight section should display a friendly message: "We couldn't fetch live flight data. Here's a sample option to consider: [Mock Flight]". This is crucial for reliability.
+
+---
+
+### **Milestone 3: Authentication Gate & User System (Week 6)**
+
+#### **Feature: Auth Gate Modal**
+*   **User Journey:** User clicks "Download as PDF." Instead of downloading, a modal gracefully overlays the page. The user can sign up/login without losing their context (the itinerary is preserved in the background).
+*   **UI Components:**
+    *   **Modal/Overlay:** A semi-transparent dark overlay (`bg-black/50`) covers the screen. A centered, white card contains the auth form.
+    *   **Tabs:** "Login" and "Sign Up" tabs within the modal.
+    *   **OAuth Buttons:** A button for "Continue with Google" with the Google logo. Styled with a border, full width.
+    *   **Separator:** "or" with horizontal lines on a muted text line.
+    *   **Email/Password Form:** Standard inputs for email and password. For sign-up, a "Confirm Password" field.
+*   **UX Best Practices:**
+    *   **Social Login First:** Place "Continue with Google" above the email form, as it's faster and has higher conversion.
+    *   **Clear Benefits:** Include a short line of text: "Sign up to download your personalized PDF itinerary."
+    *   **Seamless Transition:** After successful auth, the modal should close *smoothly* and *then* the download should immediately start (in M4). The user should never be left wondering what happened.
+
+---
+
+### **Milestone 4: PDF Generation & Delivery (Week 7)**
+
+*   **User Journey:** Post-authentication, the modal closes and the PDF download begins automatically in the browser.
+*   **UI Components:**
+    *   **Toast Notification:** A small toast message appears in the corner of the screen: "Your itinerary is downloading!" with a success checkmark icon. This provides crucial feedback that the action was completed.
+*   **UX Best Practices:**
+    *   **Automatic Download:** Do not require a second click. The user already expressed intent by clicking "Download" and then authenticating.
+    *   **Feedback is Mandatory:** The toast notification is essential. Without it, if the browser blocks the download, the user has no idea if it worked.
+
+---
+
+### **Milestone 5: Second API Integration & Polish (Week 8)**
+
+*   **User Journey:** The journey is now complete and robust.
+*   **UI Components (for Error Handling):**
+    *   **Empty States:** Design components for when no results are found from an API. Use an illustration icon (e.g., a magnifying glass) and helpful text: "We couldn't find any hotels matching your criteria. Try adjusting your budget or theme."
+*   **UX Best Practices:**
+    *   **Parallel Loading:** Ensure the UI doesn't wait for all APIs to respond. Show a skeleton for each section (Flights, Hotels, Activities) independently. As each API call returns, fill in that section. This makes the app feel much faster.
+    *   **Final Polish:**
+        *   Add subtle hover effects on buttons and cards (`hover:shadow-lg`, `hover:scale-[1.01]`).
+        *   Add smooth transitions for all interactive elements (`transition-all duration-200`).
+        *   Ensure focus states are clear and visible for keyboard navigation.
+        *   Test performance (Lighthouse) and optimize images/scripts.
