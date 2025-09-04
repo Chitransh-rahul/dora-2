@@ -1,0 +1,92 @@
+The guiding principles for this breakdown are:
+1.  **Vertical Slices:** Each milestone delivers a working, testable piece of the user journey, from frontend to backend.
+2.  **De-risking:** Tackle the highest-risk components (external API integrations) early.
+3.  **Foundation First:** Build core infrastructure before adding complex features.
+4.  **Solo Efficiency:** Sequence tasks to minimize context-switching.
+
+---
+
+### **Milestone 0: Project Foundation & Setup (Week 1)**
+
+**Objective:** Establish the core codebase, development environment, and deploy a basic "Hello World" application.
+
+| Component | Tasks |
+| :--- | :--- |
+| **Repo & Boilerplate** | 1. Initialize Git repository. <br> 2. Set up a Next.js project (App Router recommended). <br> 3. Install core dependencies (e.g., UI library like Shadcn/ui, Tailwind CSS). <br> 4. Configure basic project structure. |
+| **Development & Deployment** | 1. Set up local development environment. <br> 2. Create a basic CI/CD pipeline (e.g., GitHub Actions for Vercel/Netlify). <br> 3. Deploy the initial boilerplate to a production environment (e.g., Vercel). |
+| **Test & Acceptance** | ✅ A basic Next.js site is running locally and deployed live. <br> ✅ The solo developer can make a code change, push to `main`, and see it auto-deploy. |
+
+---
+
+### **Milestone 1: Static Itinerary Generator (Weeks 2-3)**
+
+**Objective:** Build and test the complete user-facing UI flow with **static, mock data**. This de-risks the frontend development completely independently of the unstable external APIs.
+
+| Component | Tasks |
+| :--- | :--- |
+| **Multi-Step Form (UI Only)** | 1. Build the multi-step form component with progress indicator. <br> 2. Integrate form fields: `user_name`, `destination` (simple text input), `travel_dates`, `travel_theme`, `party_size`, `budget`. <br> 3. Implement client-side validation and error messages. |
+| **Itinerary Preview (UI Only)** | 1. Create a responsive, well-designed preview component. <br> 2. Build the component to display mock itinerary data (using the exact JSON schema from the PRD). <br> 3. Implement the "Download as PDF" button (it will do nothing for now). |
+| **Test & Acceptance** | ✅ A user can fill out the form and click "Generate." <br> ✅ The app displays a beautiful, static itinerary preview with mock flights, hotels, and activities. <br> ✅ The UI is fully responsive and works on mobile/desktop. |
+
+---
+
+### **Milestone 2: The Backend Orchestrator & API Adapters (Weeks 4-5)**
+
+**Objective:** Build the core backend service (Next.js API Routes) and integrate with the first external API. This is the highest-risk technical component.
+
+| Component | Tasks |
+| :--- | :--- |
+| **Backend Foundation** | 1. Create a new API Route (e.g., `POST /api/generate-itinerary`). <br> 2. Connect the form to this API endpoint. <br> 3. Structure the code using the Adapter Pattern. |
+| **First API Integration (e.g., Flights)** | 1. Get API keys for Skyscanner (or a more dev-friendly alternative like AviationStack for MVP). <br> 2. Build the **Flight Adapter**: a module that takes `origin`, `destination`, `dates` and returns flight data. <br> 3. Implement robust error handling (e.g., timeouts, invalid responses). |
+| **Orchestrator Logic** | 1. Modify the API route to call the Flight Adapter with the user's form data. <br> 2. Structure the response into the predefined JSON schema. <br> 3. **Still return mock data for hotels and activities.** |
+| **Test & Acceptance** | ✅ The form submission triggers a call to the backend API. <br> ✅ The backend successfully calls the Flight API and logs the real response. <br> ✅ The itinerary preview now shows **real flight data** alongside mock hotel/activity data. |
+
+---
+
+### **Milestone 3: Authentication Gate & User System (Week 6)**
+
+**Objective:** Implement the required authentication flow to gate the PDF download feature and capture users.
+
+| Component | Tasks |
+| :--- | :--- |
+| **Database & Auth Provider** | 1. Choose and set up a database (e.g., PostgreSQL with Neon, Supabase). <br> 2. Integrate an auth library (e.g., `next-auth`). <br> 3. Configure providers (Email/Password and Google OAuth). <br> 4. Define a simple `users` table. |
+| **Auth Gate Modal** | 1. Build the modal/popup that appears when the "Download as PDF" button is clicked. <br> 2. Implement login/sign-up functionality within the modal. |
+| **Session Management** | 1. Persist the user's generated itinerary data (in the DB or session) so it can be accessed after they log in. <br> 2. Upon successful auth, trigger the next step (PDF generation). |
+| **Test & Acceptance** | ✅ Clicking "Download as PDF" opens an auth modal. <br> ✅ A user can create an account and log in. <br> ✅ After logging in, the user is returned to the itinerary preview. (The download doesn't work yet). |
+
+---
+
+### **Milestone 4: PDF Generation & Delivery (Week 7)**
+
+**Objective:** Create the service that turns the itinerary JSON into a downloadable, branded PDF.
+
+| Component | Tasks |
+| :--- | :--- |
+| **PDF Service** | 1. Choose a PDF generation library (e.g., `@react-pdf/renderer` for simplicity, `puppeteer` for HTML-to-PDF). <br> 2. Create a PDF template component that consumes the itinerary JSON schema. <br> 3. Ensure all affiliate links are included and trackable. |
+| **API Integration** | 1. Create a new API Route (e.g., `POST /api/generate-pdf`). <br> 2. This route should fetch the user's itinerary data, generate the PDF, and return it as a download. <br> 3. Connect the post-auth flow to call this API endpoint and trigger the browser download. |
+| **Test & Acceptance** | ✅ After auth, a PDF file automatically downloads. <br> ✅ The PDF is well-formatted, includes all user data, and is branded. <br> ✅ The PDF contains the same real flight data and mock other data. |
+
+---
+
+### **Milestone 5: Second API Integration & Polish (Week 8)**
+
+**Objective:** Integrate the second major API (Hotels) and complete the MVP by replacing all remaining mock data.
+
+| Component | Tasks |
+| :--- | :--- |
+| **Second API Integration (Hotels)** | 1. Get API keys for Booking.com (or a more accessible alternative for testing). <br> 2. Build the **Hotel Adapter**: a module that takes `destination`, `dates`, `party_size`, `theme` and returns hotel data. <br> 3. Implement the business logic for filtering/ranking based on `theme`. |
+| **Update Orchestrator** | 1. Modify the main API route to make **parallel calls** to the Flight Adapter and Hotel Adapter. <br> 2. Merge the results with the static data (utility links, mock activities). <br> 3. **The itinerary now has real flights and real hotels.** |
+| **Error Handling & Polish** | 1. Implement comprehensive error handling for the entire flow (e.g., "No hotels found" states). <br> 2. Add loading spinners, success messages, and toast notifications. <br> 3. Performance optimization (e.g., caching frequent destination searches). |
+| **Test & Acceptance (MVP GO/NO-GO)** | ✅ The full flow works: Form -> Real API Calls -> Preview with Real Data -> Auth -> PDF Download. <br> ✅ The application meets the non-functional requirements (performance, error handling). <br> ✅ The app is deployed and ready for a limited public beta. |
+
+---
+
+### **Sequence & Summary**
+
+This sequence allows you to build and test Dora one vertical slice at a time:
+1.  **M0:** Setup
+2.  **M1:** Frontend & UI (de-risked with mock data)
+3.  **M2:** Backend & 1st API (tackles the highest technical risk early)
+4.  **M3:** Auth (builds the user capture mechanism)
+5.  **M4:** PDF (completes the core user promise)
+6.  **M5:** 2nd API & Polish (completes the MVP feature set)
