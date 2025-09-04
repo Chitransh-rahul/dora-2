@@ -139,8 +139,8 @@ Please provide:
 
 3. CULTURAL_NOTES (5 specific items): Important cultural etiquette, customs, and local tips for respectful travel in {destination}.
 
-Format your response as JSON with this exact structure:
-{
+Format your response as valid JSON with this exact structure:
+{{
     "introduction": "Your introduction text here",
     "packing_tips": [
         "Tip 1",
@@ -156,7 +156,7 @@ Format your response as JSON with this exact structure:
         "Note 4",
         "Note 5"
     ]
-}
+}}
 
 Only return the JSON, no additional text."""
             
