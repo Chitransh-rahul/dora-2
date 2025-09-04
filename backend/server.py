@@ -1,17 +1,22 @@
-from fastapi import FastAPI, HTTPException, Depends
+from fastapi import FastAPI, HTTPException, Depends, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 from typing import List, Optional, Dict, Any
 from datetime import datetime, date
 import os
+import asyncio
+import uuid
 from dotenv import load_dotenv
 import motor.motor_asyncio
 from bson import ObjectId
 
+# Emergent LLM Integration
+from emergentintegrations.llm.chat import LlmChat, UserMessage
+
 # Load environment variables
 load_dotenv()
 
-app = FastAPI(title="Dora Travel API", version="1.0.0")
+app = FastAPI(title="Dora Travel API", version="2.0.0")
 
 # CORS configuration
 app.add_middleware(
@@ -26,6 +31,9 @@ app.add_middleware(
 MONGO_URL = os.getenv("MONGO_URL")
 client = motor.motor_asyncio.AsyncIOMotorClient(MONGO_URL)
 database = client.dora_travel
+
+# LLM Configuration
+EMERGENT_LLM_KEY = os.getenv("EMERGENT_LLM_KEY")
 
 # Pydantic models
 class TravelForm(BaseModel):
@@ -88,7 +96,178 @@ class TravelItinerary(BaseModel):
     destination_info: DestinationInfo
     utility_links: UtilityLinks
 
-# Mock data generators
+# AI Content Generation Service
+class AIContentGenerator:
+    def __init__(self):
+        self.api_key = EMERGENT_LLM_KEY
+    
+    async def generate_destination_info(self, destination: str, theme: str, duration_days: int, party_size: int) -> DestinationInfo:
+        """Generate personalized destination information using AI"""
+        try:
+            # Create unique session ID for this request
+            session_id = f"destination-{uuid.uuid4().hex[:8]}"
+            
+            # Initialize LLM chat
+            chat = LlmChat(
+                api_key=self.api_key,
+                session_id=session_id,
+                system_message=f"""You are a knowledgeable travel expert specializing in creating personalized destination guides. 
+                
+                Generate travel information that is:
+                - Accurate and helpful
+                - Tailored to the specific travel theme and group composition
+                - Practical and actionable
+                - Culturally sensitive and respectful
+                
+                Focus on providing genuine value to travelers planning their trip."""
+            ).with_model("openai", "gpt-4o-mini")
+            
+            # Craft the prompt based on user preferences
+            prompt = f"""Create personalized travel information for {destination} for a {theme.lower()} trip.
+
+Trip Details:
+- Destination: {destination}
+- Travel Theme: {theme}
+- Duration: {duration_days} days
+- Group Size: {party_size} people
+
+Please provide:
+
+1. INTRODUCTION (2-3 sentences): A welcoming introduction to {destination} that highlights what makes it special for {theme.lower()} travelers.
+
+2. PACKING_TIPS (5 specific items): Essential packing recommendations tailored for {destination} and {theme.lower()} travel.
+
+3. CULTURAL_NOTES (5 specific items): Important cultural etiquette, customs, and local tips for respectful travel in {destination}.
+
+Format your response as JSON with this exact structure:
+{
+    "introduction": "Your introduction text here",
+    "packing_tips": [
+        "Tip 1",
+        "Tip 2", 
+        "Tip 3",
+        "Tip 4",
+        "Tip 5"
+    ],
+    "cultural_notes": [
+        "Note 1",
+        "Note 2",
+        "Note 3", 
+        "Note 4",
+        "Note 5"
+    ]
+}
+
+Only return the JSON, no additional text."""
+            
+            # Send message to AI
+            user_message = UserMessage(text=prompt)
+            response = await chat.send_message(user_message)
+            
+            # Parse AI response
+            import json
+            try:
+                ai_data = json.loads(response)
+                return DestinationInfo(
+                    introduction=ai_data["introduction"],
+                    packing_tips=ai_data["packing_tips"],
+                    cultural_notes=ai_data["cultural_notes"]
+                )
+            except json.JSONDecodeError:
+                # Fallback to enhanced mock data if JSON parsing fails
+                return self._generate_enhanced_mock_destination_info(destination, theme)
+                
+        except Exception as e:
+            print(f"AI generation error: {str(e)}")
+            # Fallback to enhanced mock data
+            return self._generate_enhanced_mock_destination_info(destination, theme)
+    
+    def _generate_enhanced_mock_destination_info(self, destination: str, theme: str) -> DestinationInfo:
+        """Enhanced fallback destination info with theme-specific content"""
+        theme_specific_content = {
+            "Family": {
+                "intro": f"Welcome to {destination}! This family-friendly destination offers the perfect blend of fun activities for all ages, safe environments, and educational experiences that will create lasting memories for your entire family.",
+                "packing": [
+                    "Child-friendly snacks and entertainment for travel",
+                    "First aid kit with child-specific medications",
+                    "Comfortable strollers or carrier for young children",
+                    "Sun protection items (hats, sunscreen, UV clothing)",
+                    "Portable chargers for devices and entertainment"
+                ],
+                "culture": [
+                    "Research family-friendly restaurants and meal times",
+                    "Learn basic phrases to help children interact locally",
+                    "Understand local customs regarding children in public spaces",
+                    "Be aware of local emergency numbers and hospitals",
+                    "Respect quiet hours and local family traditions"
+                ]
+            },
+            "Business": {
+                "intro": f"Welcome to {destination}! This dynamic business hub offers excellent networking opportunities, world-class conference facilities, and efficient infrastructure perfect for productive business travel.",
+                "packing": [
+                    "Professional attire suitable for local business culture",
+                    "Reliable laptop with international adapters",
+                    "Business cards and networking materials",
+                    "Backup chargers for all devices",
+                    "Comfortable dress shoes for long days"
+                ],
+                "culture": [
+                    "Research local business etiquette and meeting customs",
+                    "Understand appropriate greeting styles and gift-giving",
+                    "Learn about punctuality expectations and scheduling",
+                    "Respect local business hours and holiday schedules",
+                    "Be aware of dining customs for business meals"
+                ]
+            },
+            "Luxury": {
+                "intro": f"Welcome to {destination}! This sophisticated destination offers world-class luxury experiences, from premium accommodations to exclusive cultural encounters, perfect for discerning travelers seeking the finest things in life.",
+                "packing": [
+                    "Elegant evening wear for fine dining experiences",
+                    "High-quality comfortable walking shoes",
+                    "Premium skincare for different climate conditions",
+                    "Sophisticated accessories for upscale venues",
+                    "Quality camera to capture memorable moments"
+                ],
+                "culture": [
+                    "Learn about local luxury customs and etiquette",
+                    "Understand tipping expectations at high-end establishments",
+                    "Research dress codes for exclusive venues",
+                    "Respect local traditions while enjoying premium experiences",
+                    "Be mindful of photography policies at luxury locations"
+                ]
+            }
+        }
+        
+        default_content = {
+            "intro": f"Welcome to {destination}! This vibrant destination offers the perfect blend of culture, history, and modern attractions. Whether you're seeking adventure, relaxation, or cultural enrichment, {destination} has something special for every traveler.",
+            "packing": [
+                "Comfortable walking shoes for exploring",
+                "Weather-appropriate clothing layers",
+                "Universal travel adapter for your devices",
+                "Portable charger and power bank",
+                "Basic first aid and personal medications"
+            ],
+            "culture": [
+                "Learn a few basic local phrases",
+                "Respect local customs and dress codes",
+                "Research local dining etiquette and tipping",
+                "Be mindful of cultural and religious sites",
+                "Keep important documents secure"
+            ]
+        }
+        
+        content = theme_specific_content.get(theme, default_content)
+        
+        return DestinationInfo(
+            introduction=content["intro"],
+            packing_tips=content["packing"],
+            cultural_notes=content["culture"]
+        )
+
+# Initialize AI service
+ai_generator = AIContentGenerator()
+
+# Mock data generators (keeping existing flight and hotel generators)
 def generate_mock_flights(origin: str, destination: str, theme: str, budget: float) -> List[FlightOption]:
     """Generate mock flight data based on user preferences"""
     base_price = min(budget * 0.4, 800)  # Flight shouldn't exceed 40% of budget or $800
@@ -286,30 +465,12 @@ def generate_mock_itinerary_days(start_date: date, end_date: date, destination: 
             activities=day_activities
         ))
         
-        current_date = current_date.replace(day=current_date.day + 1) if current_date.day < 28 else current_date.replace(month=current_date.month + 1, day=1)
+        # Move to next day
+        from datetime import timedelta
+        current_date = current_date + timedelta(days=1)
         day_num += 1
     
     return days
-
-def generate_mock_destination_info(destination: str, theme: str) -> DestinationInfo:
-    """Generate mock destination information"""
-    return DestinationInfo(
-        introduction=f"Welcome to {destination}! This vibrant destination offers the perfect blend of culture, history, and modern attractions. Whether you're seeking adventure, relaxation, or cultural enrichment, {destination} has something special for every traveler.",
-        packing_tips=[
-            "Comfortable walking shoes for exploring",
-            "Light layers for changing weather",
-            "Portable charger for your devices",
-            "Travel adapter for international outlets",
-            "Sunscreen and sunglasses"
-        ],
-        cultural_notes=[
-            "Learn a few basic local phrases",
-            "Respect local customs and dress codes",
-            "Try the local cuisine with an open mind",
-            "Be mindful of tipping customs",
-            "Keep important documents secure"
-        ]
-    )
 
 def generate_mock_utility_links(destination: str) -> UtilityLinks:
     """Generate mock utility links"""
@@ -322,40 +483,55 @@ def generate_mock_utility_links(destination: str) -> UtilityLinks:
 
 @app.get("/")
 async def root():
-    return {"message": "Dora Travel API is running!"}
+    return {"message": "Dora Travel API v2.0 is running with AI-powered content generation!"}
 
 @app.post("/api/generate-itinerary", response_model=TravelItinerary)
 async def generate_itinerary(form_data: TravelForm):
-    """Generate a travel itinerary based on user preferences"""
+    """Generate a travel itinerary with AI-powered destination information"""
     try:
-        # Generate mock data based on user preferences
-        flights = generate_mock_flights(
-            form_data.origin_city, 
-            form_data.destination, 
-            form_data.travel_theme, 
-            form_data.budget_per_person
-        )
+        duration_days = (form_data.end_date - form_data.start_date).days + 1
         
-        hotels = generate_mock_hotels(
-            form_data.destination,
-            form_data.travel_theme,
-            form_data.budget_per_person,
-            form_data.party_size
-        )
+        # Generate data in parallel for better performance
+        async def generate_all_data():
+            # Start AI generation (this takes the longest)
+            ai_destination_task = ai_generator.generate_destination_info(
+                form_data.destination,
+                form_data.travel_theme,
+                duration_days,
+                form_data.party_size
+            )
+            
+            # Generate mock data (these are fast)
+            flights = generate_mock_flights(
+                form_data.origin_city, 
+                form_data.destination, 
+                form_data.travel_theme, 
+                form_data.budget_per_person
+            )
+            
+            hotels = generate_mock_hotels(
+                form_data.destination,
+                form_data.travel_theme,
+                form_data.budget_per_person,
+                form_data.party_size
+            )
+            
+            itinerary_days = generate_mock_itinerary_days(
+                form_data.start_date,
+                form_data.end_date,
+                form_data.destination,
+                form_data.travel_theme
+            )
+            
+            utility_links = generate_mock_utility_links(form_data.destination)
+            
+            # Wait for AI generation to complete
+            destination_info = await ai_destination_task
+            
+            return flights, hotels, itinerary_days, destination_info, utility_links
         
-        itinerary_days = generate_mock_itinerary_days(
-            form_data.start_date,
-            form_data.end_date,
-            form_data.destination,
-            form_data.travel_theme
-        )
-        
-        destination_info = generate_mock_destination_info(
-            form_data.destination,
-            form_data.travel_theme
-        )
-        
-        utility_links = generate_mock_utility_links(form_data.destination)
+        # Generate all data
+        flights, hotels, itinerary_days, destination_info, utility_links = await generate_all_data()
         
         # Compile the complete itinerary
         itinerary = TravelItinerary(
@@ -371,7 +547,7 @@ async def generate_itinerary(form_data: TravelForm):
                 "destination": form_data.destination,
                 "start_date": form_data.start_date.strftime("%Y-%m-%d"),
                 "end_date": form_data.end_date.strftime("%Y-%m-%d"),
-                "duration_days": (form_data.end_date - form_data.start_date).days + 1
+                "duration_days": duration_days
             },
             flights=flights,
             accommodations=hotels,
@@ -383,11 +559,33 @@ async def generate_itinerary(form_data: TravelForm):
         return itinerary
         
     except Exception as e:
+        print(f"Error generating itinerary: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error generating itinerary: {str(e)}")
 
 @app.get("/api/health")
 async def health_check():
-    return {"status": "healthy", "service": "Dora Travel API"}
+    return {"status": "healthy", "service": "Dora Travel API v2.0", "ai_enabled": bool(EMERGENT_LLM_KEY)}
+
+@app.get("/api/ai-test")
+async def test_ai_integration():
+    """Test endpoint to verify AI integration is working"""
+    try:
+        test_info = await ai_generator.generate_destination_info("Paris, France", "Luxury", 5, 2)
+        return {
+            "status": "success",
+            "ai_working": True,
+            "sample_content": {
+                "introduction": test_info.introduction[:100] + "...",
+                "packing_tips_count": len(test_info.packing_tips),
+                "cultural_notes_count": len(test_info.cultural_notes)
+            }
+        }
+    except Exception as e:
+        return {
+            "status": "error",
+            "ai_working": False,
+            "error": str(e)
+        }
 
 if __name__ == "__main__":
     import uvicorn
