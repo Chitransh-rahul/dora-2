@@ -554,9 +554,10 @@ const ActivityIcon = ({ type }) => {
   );
 };
 
-// Itinerary Preview Component
+// Itinerary Preview Component with Authentication
 const ItineraryPreview = ({ itinerary, onDownload }) => {
   const [activeDay, setActiveDay] = useState(0);
+  const { isAuthenticated } = useAuth0();
   
   if (!itinerary) return null;
   
@@ -734,17 +735,20 @@ const ItineraryPreview = ({ itinerary, onDownload }) => {
             </div>
           </div>
           
-          {/* Download CTA */}
+          {/* Download CTA with Authentication */}
           <div className="text-center">
             <button
               onClick={onDownload}
               className="btn-primary text-xl px-12 py-4"
             >
               <Download className="mr-3 w-6 h-6" />
-              Download Complete Itinerary as PDF
+              {isAuthenticated ? 'Save & Download Complete Itinerary' : 'Sign In to Download Complete Itinerary'}
             </button>
             <p className="text-sm text-foreground-muted mt-4">
-              Sign up to get your personalized PDF with all booking links
+              {isAuthenticated 
+                ? 'Your itinerary will be saved to your account and PDF download is coming soon!'
+                : 'Sign up to get your personalized PDF with all booking links and save your itinerary'
+              }
             </p>
           </div>
         </div>
