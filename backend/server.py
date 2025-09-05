@@ -184,56 +184,58 @@ Only return the JSON, no additional text."""
             # Fallback to enhanced mock data
             return self._generate_enhanced_mock_destination_info(destinations, theme)
     
-    def _generate_enhanced_mock_destination_info(self, destination: str, theme: str) -> DestinationInfo:
-        """Enhanced fallback destination info with theme-specific content"""
+    def _generate_enhanced_mock_destination_info(self, destinations: List[str], theme: str) -> DestinationInfo:
+        """Enhanced fallback destination info with theme-specific content for multiple destinations"""
+        destinations_str = ", ".join(destinations)
+        
         theme_specific_content = {
             "Family": {
-                "intro": f"Welcome to {destination}! This family-friendly destination offers the perfect blend of fun activities for all ages, safe environments, and educational experiences that will create lasting memories for your entire family.",
+                "intro": f"Welcome to your multi-city family adventure across {destinations_str}! These destinations offer the perfect blend of fun activities for all ages, safe environments, and educational experiences that will create lasting memories for your entire family across multiple amazing locations.",
                 "packing": [
-                    "Child-friendly snacks and entertainment for travel",
+                    "Child-friendly snacks and entertainment for multi-city travel",
                     "First aid kit with child-specific medications",
                     "Comfortable strollers or carrier for young children",
-                    "Sun protection items (hats, sunscreen, UV clothing)",
-                    "Portable chargers for devices and entertainment"
+                    "Sun protection items for different climates (hats, sunscreen, UV clothing)",
+                    "Portable chargers and extra batteries for devices"
                 ],
                 "culture": [
-                    "Research family-friendly restaurants and meal times",
-                    "Learn basic phrases to help children interact locally",
+                    "Research family-friendly restaurants and meal times in each destination",
+                    "Learn basic phrases in each local language to help children interact",
                     "Understand local customs regarding children in public spaces",
-                    "Be aware of local emergency numbers and hospitals",
-                    "Respect quiet hours and local family traditions"
+                    "Be aware of local emergency numbers and hospitals in each city",
+                    "Respect quiet hours and local family traditions across destinations"
                 ]
             },
             "Business": {
-                "intro": f"Welcome to {destination}! This dynamic business hub offers excellent networking opportunities, world-class conference facilities, and efficient infrastructure perfect for productive business travel.",
+                "intro": f"Welcome to your multi-city business journey across {destinations_str}! These dynamic business hubs offer excellent networking opportunities, world-class conference facilities, and efficient infrastructure perfect for productive business travel across multiple markets.",
                 "packing": [
-                    "Professional attire suitable for local business culture",
-                    "Reliable laptop with international adapters",
+                    "Professional attire suitable for different business cultures",
+                    "Reliable laptop with international adapters for all destinations",
                     "Business cards and networking materials",
-                    "Backup chargers for all devices",
-                    "Comfortable dress shoes for long days"
+                    "Multiple backup chargers for extended travel",
+                    "Comfortable dress shoes for long days across cities"
                 ],
                 "culture": [
-                    "Research local business etiquette and meeting customs",
-                    "Understand appropriate greeting styles and gift-giving",
-                    "Learn about punctuality expectations and scheduling",
-                    "Respect local business hours and holiday schedules",
-                    "Be aware of dining customs for business meals"
+                    "Research local business etiquette and meeting customs for each destination",
+                    "Understand appropriate greeting styles and gift-giving across cultures",
+                    "Learn about punctuality expectations in different business environments",
+                    "Respect local business hours and holiday schedules in each location",
+                    "Be aware of dining customs for business meals across destinations"
                 ]
             },
             "Luxury": {
-                "intro": f"Welcome to {destination}! This sophisticated destination offers world-class luxury experiences, from premium accommodations to exclusive cultural encounters, perfect for discerning travelers seeking the finest things in life.",
+                "intro": f"Welcome to your luxury multi-city journey across {destinations_str}! These sophisticated destinations offer world-class luxury experiences, from premium accommodations to exclusive cultural encounters, perfect for discerning travelers seeking the finest experiences across multiple incredible locations.",
                 "packing": [
-                    "Elegant evening wear for fine dining experiences",
-                    "High-quality comfortable walking shoes",
+                    "Elegant evening wear suitable for fine dining across destinations",
+                    "High-quality comfortable walking shoes for luxury exploration",
                     "Premium skincare for different climate conditions",
-                    "Sophisticated accessories for upscale venues",
-                    "Quality camera to capture memorable moments"
+                    "Sophisticated accessories for upscale venues in each city",
+                    "Quality camera to capture memorable moments across locations"
                 ],
                 "culture": [
-                    "Learn about local luxury customs and etiquette",
-                    "Understand tipping expectations at high-end establishments",
-                    "Research dress codes for exclusive venues",
+                    "Learn about local luxury customs and etiquette in each destination",
+                    "Understand tipping expectations at high-end establishments across cities",
+                    "Research dress codes for exclusive venues in different locations",
                     "Respect local traditions while enjoying premium experiences",
                     "Be mindful of photography policies at luxury locations"
                 ]
@@ -241,20 +243,20 @@ Only return the JSON, no additional text."""
         }
         
         default_content = {
-            "intro": f"Welcome to {destination}! This vibrant destination offers the perfect blend of culture, history, and modern attractions. Whether you're seeking adventure, relaxation, or cultural enrichment, {destination} has something special for every traveler.",
+            "intro": f"Welcome to your incredible multi-city journey across {destinations_str}! These vibrant destinations offer the perfect blend of culture, history, and modern attractions. Whether you're seeking adventure, relaxation, or cultural enrichment, this multi-city adventure has something special for every traveler.",
             "packing": [
-                "Comfortable walking shoes for exploring",
-                "Weather-appropriate clothing layers",
+                "Comfortable walking shoes for exploring multiple cities",
+                "Weather-appropriate clothing layers for different climates",
                 "Universal travel adapter for your devices",
-                "Portable charger and power bank",
-                "Basic first aid and personal medications"
+                "Portable charger and multiple power banks for extended travel",
+                "Basic first aid and personal medications for multi-city travel"
             ],
             "culture": [
-                "Learn a few basic local phrases",
-                "Respect local customs and dress codes",
-                "Research local dining etiquette and tipping",
-                "Be mindful of cultural and religious sites",
-                "Keep important documents secure"
+                "Learn a few basic local phrases for each destination",
+                "Respect local customs and dress codes across locations",
+                "Research local dining etiquette and tipping in each city",
+                "Be mindful of cultural and religious sites in all destinations",
+                "Keep important documents secure during multi-city travel"
             ]
         }
         
