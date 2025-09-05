@@ -6,35 +6,45 @@ module.exports = {
   theme: {
     extend: {
       colors: {
+        // Dark theme colors based on reference
+        background: '#000000',
+        surface: '#111111',
+        'surface-2': '#1a1a1a',
+        foreground: '#ffffff',
+        'foreground-muted': '#a3a3a3',
+        'foreground-subtle': '#525252',
         primary: {
-          DEFAULT: '#2563eb',
-          hover: '#1d4ed8',
+          DEFAULT: '#ffffff',
+          hover: '#f5f5f5',
         },
-        background: '#ffffff',
-        surface: '#f8fafc',
-        foreground: '#0f172a',
-        muted: '#64748b',
-        border: '#e2e8f0',
-        success: '#16a34a',
-        error: '#dc2626',
+        accent: '#333333',
+        border: '#262626',
+        input: '#1a1a1a',
+        success: '#22c55e',
+        error: '#ef4444',
       },
       fontFamily: {
-        sans: ['Inter', 'sans-serif'],
-        mono: ['JetBrains Mono', 'monospace'],
+        sans: ['Inter', 'system-ui', 'sans-serif'],
+      },
+      fontSize: {
+        'hero': ['4rem', { lineHeight: '1.1', fontWeight: '700' }],
+        'hero-sm': ['3rem', { lineHeight: '1.1', fontWeight: '700' }],
       },
       borderRadius: {
-        'DEFAULT': '0.5rem',
-        'sm': '0.375rem',
-        'lg': '1rem',
+        'DEFAULT': '12px',
+        'lg': '16px',
       },
       boxShadow: {
-        'sm': '0 1px 2px 0 rgb(0 0 0 / 0.05)',
-        'md': '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)',
-        'lg': '0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)',
+        'glow': '0 0 20px rgba(255, 255, 255, 0.1)',
+        'card': '0 4px 20px rgba(0, 0, 0, 0.3)',
+      },
+      backdropBlur: {
+        'glass': '16px',
       },
       animation: {
-        'fade-in': 'fadeIn 0.5s ease-in-out',
-        'slide-up': 'slideUp 0.3s ease-out',
+        'fade-in': 'fadeIn 0.6s ease-out',
+        'slide-up': 'slideUp 0.4s ease-out',
+        'scale-in': 'scaleIn 0.3s ease-out',
       },
       keyframes: {
         fadeIn: {
@@ -42,8 +52,12 @@ module.exports = {
           '100%': { opacity: '1' },
         },
         slideUp: {
-          '0%': { transform: 'translateY(10px)', opacity: '0' },
+          '0%': { transform: 'translateY(20px)', opacity: '0' },
           '100%': { transform: 'translateY(0)', opacity: '1' },
+        },
+        scaleIn: {
+          '0%': { transform: 'scale(0.95)', opacity: '0' },
+          '100%': { transform: 'scale(1)', opacity: '1' },
         },
       },
     },
