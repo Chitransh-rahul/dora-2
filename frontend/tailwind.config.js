@@ -6,14 +6,14 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        // Dark theme colors with purple gradient support
+        // Techy dark theme with subtle purple neon accents
         background: '#000000',
         'background-gradient': {
-          'from': '#6c3baa',
+          'from': '#1a0a2e',
           'to': '#000000',
         },
-        surface: '#111111',
-        'surface-2': '#1a1a1a',
+        surface: '#0a0a0a',
+        'surface-2': '#151515',
         foreground: '#ffffff',
         'foreground-muted': '#a3a3a3',
         'foreground-subtle': '#525252',
@@ -23,14 +23,20 @@ module.exports = {
         },
         accent: '#6c3baa',
         'accent-dark': '#4f2a80',
-        border: '#262626',
-        input: '#1a1a1a',
+        'accent-light': '#8b5cf6',
+        border: '#1f1f1f',
+        input: '#0f0f0f',
         success: '#22c55e',
         error: '#ef4444',
         purple: {
           DEFAULT: '#6c3baa',
           light: '#8b5cf6',
           dark: '#4f2a80',
+          neon: '#c084fc',
+        },
+        neon: {
+          purple: '#c084fc',
+          glow: 'rgba(192, 132, 252, 0.5)',
         },
       },
       fontFamily: {
