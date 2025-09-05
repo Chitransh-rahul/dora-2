@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useAuth0 } from '@auth0/auth0-react';
 import axios from 'axios';
 import DatePicker from 'react-datepicker';
 import Select from 'react-select';
@@ -15,10 +16,14 @@ import {
   Loader2,
   Globe,
   ArrowRight,
-  Check
+  Check,
+  User,
+  LogOut
 } from 'lucide-react';
 import 'react-datepicker/dist/react-datepicker.css';
 import './App.css';
+import AuthModal from './components/AuthModal';
+import useAuth from './hooks/useAuth';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 
