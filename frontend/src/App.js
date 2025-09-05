@@ -377,15 +377,12 @@ const TravelForm = ({ onSubmit, isLoading }) => {
                   {travelThemes.map((theme) => (
                     <div
                       key={theme.value}
-                      className={`theme-card ${formData.travel_theme === theme.value ? 'selected' : ''}`}
+                      className={`glass-theme-card ${formData.travel_theme === theme.value ? 'selected' : ''}`}
                       onClick={() => setFormData({...formData, travel_theme: theme.value})}
                     >
-                      <div className={`absolute inset-0 bg-gradient-to-br ${theme.gradient} opacity-50`}></div>
-                      <div className="relative">
-                        <div className="text-3xl mb-2">{theme.icon}</div>
-                        <div className="font-semibold text-lg text-foreground">{theme.label}</div>
-                        <div className="text-sm text-foreground-muted mt-1">{theme.description}</div>
-                      </div>
+                      <div className="text-3xl mb-3">{theme.icon}</div>
+                      <div className="font-semibold text-lg text-foreground mb-2">{theme.label}</div>
+                      <div className="text-sm text-foreground-muted">{theme.description}</div>
                     </div>
                   ))}
                 </div>
