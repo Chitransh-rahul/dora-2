@@ -702,7 +702,17 @@ async def generate_itinerary(form_data: TravelForm):
             "session_id": session_id,
             "user_email": None,
             "user_id": None,
-            "form_data": form_data.dict(),
+            "form_data": {
+                "user_name": form_data.user_name,
+                "origin_city": form_data.origin_city,
+                "destinations": form_data.destinations,
+                "start_date": form_data.start_date.strftime("%Y-%m-%d"),
+                "end_date": form_data.end_date.strftime("%Y-%m-%d"),
+                "travel_theme": form_data.travel_theme,
+                "party_size": form_data.party_size,
+                "budget_per_person": form_data.budget_per_person,
+                "currency": form_data.currency
+            },
             "generated_itinerary": itinerary_data,
             "created_at": datetime.utcnow(),
             "expires_at": datetime.utcnow() + timedelta(days=7),  # 7 days
