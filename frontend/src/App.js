@@ -301,20 +301,42 @@ const TravelForm = ({ onSubmit, isLoading }) => {
                     />
                   </div>
                   
-                  <div className="form-group">
-                    <label className="form-label">
-                      <MapPin className="inline w-4 h-4 mr-2" />
-                      Destination
-                    </label>
-                    <input
-                      type="text"
-                      className="input"
-                      placeholder="e.g., Paris, France"
-                      value={formData.destination}
-                      onChange={(e) => setFormData({...formData, destination: e.target.value})}
-                      required
-                    />
+                <div className="form-group col-span-full">
+                  <label className="form-label">
+                    <MapPin className="inline w-4 h-4 mr-2" />
+                    Destinations
+                  </label>
+                  <div className="space-y-3">
+                    {formData.destinations.map((destination, index) => (
+                      <div key={index} className="flex gap-3">
+                        <input
+                          type="text"
+                          className="input flex-1"
+                          placeholder={`Destination ${index + 1} (e.g., Paris, France)`}
+                          value={destination}
+                          onChange={(e) => updateDestination(index, e.target.value)}
+                          required={index === 0}
+                        />
+                        {formData.destinations.length > 1 && (
+                          <button
+                            type="button"
+                            onClick={() => removeDestination(index)}
+                            className="btn-secondary px-3 py-2 text-red-400 hover:text-red-300 hover:bg-red-500/10"
+                          >
+                            ✕
+                          </button>
+                        )}
+                      </div>
+                    ))}
+                    <button
+                      type="button"
+                      onClick={addDestination}
+                      className="btn-secondary text-sm px-4 py-2 text-purple-400 hover:text-purple-300 hover:bg-purple-500/10 border-purple-500/20"
+                    >
+                      + Add Another Destination
+                    </button>
                   </div>
+                </div>
                 </div>
                 
                 <div className="grid-form">
