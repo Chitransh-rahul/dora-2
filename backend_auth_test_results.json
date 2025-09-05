@@ -1,0 +1,92 @@
+{
+  "summary": {
+    "passed": 7,
+    "total": 9,
+    "success_rate": "77.8%",
+    "timestamp": "2025-09-05T11:02:08.486805"
+  },
+  "auth_config": {
+    "auth0_domain": "dev-01mtujmmqt4lkn8h.us.auth0.com",
+    "auth0_audience": "https://api.travel-itinerary.com",
+    "backend_url": "https://travel-wizard-3.preview.emergentagent.com/api"
+  },
+  "test_data_used": {
+    "user_name": "Sarah Johnson",
+    "origin_city": "Los Angeles, CA",
+    "destinations": [
+      "Tokyo, Japan",
+      "Kyoto, Japan"
+    ],
+    "start_date": "2024-12-15",
+    "end_date": "2024-12-22",
+    "travel_theme": "Adventure",
+    "party_size": 2,
+    "budget_per_person": 2500,
+    "currency": "USD"
+  },
+  "detailed_results": [
+    {
+      "test": "Auth0 Domain Connectivity",
+      "success": false,
+      "details": "HTTP 404: Not found.",
+      "timestamp": "2025-09-05T11:01:53.078400",
+      "response_data": null
+    },
+    {
+      "test": "Auth0 JWKS Endpoint",
+      "success": true,
+      "details": "Successfully fetched JWKS with 2 keys",
+      "timestamp": "2025-09-05T11:01:54.264792",
+      "response_data": null
+    },
+    {
+      "test": "Setup Session",
+      "success": true,
+      "details": "Created session for auth testing: 62a3adcd-721c-4d78-8a94-dc53dd1b1f67",
+      "timestamp": "2025-09-05T11:02:01.084276",
+      "response_data": null
+    },
+    {
+      "test": "Prepare Auth Endpoint",
+      "success": true,
+      "details": "Successfully prepared auth: Itinerary prepared for authentication",
+      "timestamp": "2025-09-05T11:02:02.168044",
+      "response_data": null
+    },
+    {
+      "test": "Backend Auth Configuration",
+      "success": true,
+      "details": "Backend properly validates JWT tokens and rejects malformed tokens",
+      "timestamp": "2025-09-05T11:02:03.223314",
+      "response_data": null
+    },
+    {
+      "test": "Convert Itinerary (No Auth)",
+      "success": true,
+      "details": "Correctly rejected request without authentication",
+      "timestamp": "2025-09-05T11:02:04.297607",
+      "response_data": null
+    },
+    {
+      "test": "Convert Itinerary (Invalid Auth)",
+      "success": true,
+      "details": "Correctly rejected invalid token: Invalid authentication token",
+      "timestamp": "2025-09-05T11:02:05.353296",
+      "response_data": null
+    },
+    {
+      "test": "My Itineraries (No Auth)",
+      "success": true,
+      "details": "Correctly rejected request without authentication",
+      "timestamp": "2025-09-05T11:02:06.405843",
+      "response_data": null
+    },
+    {
+      "test": "CORS Configuration",
+      "success": false,
+      "details": "CORS preflight failed: HTTP 400",
+      "timestamp": "2025-09-05T11:02:07.484782",
+      "response_data": null
+    }
+  ]
+}
