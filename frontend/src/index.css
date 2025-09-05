@@ -21,6 +21,10 @@
     background: linear-gradient(135deg, #6c3baa 0%, #4f2a80 50%, #000000 100%);
     background-attachment: fixed;
   }
+  
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-semibold;
+  }
 
   /* Custom scrollbar */
   ::-webkit-scrollbar {
