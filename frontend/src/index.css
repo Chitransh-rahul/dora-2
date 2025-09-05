@@ -45,18 +45,71 @@
 @layer components {
   .btn {
     @apply inline-flex items-center justify-center rounded-lg px-6 py-3 text-sm font-semibold transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-background disabled:opacity-50 disabled:cursor-not-allowed;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(108, 59, 170, 0.2);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4), 
+                0 0 0 1px rgba(255, 255, 255, 0.03),
+                0 0 10px rgba(108, 59, 170, 0.15),
+                inset 0 0 10px rgba(108, 59, 170, 0.05);
   }
   
   .btn-primary {
-    @apply btn bg-primary text-background hover:bg-primary-hover focus:ring-primary;
+    @apply btn text-foreground;
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(108, 59, 170, 0.3);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5), 
+                0 0 0 1px rgba(255, 255, 255, 0.05),
+                0 0 15px rgba(108, 59, 170, 0.2),
+                inset 0 0 15px rgba(108, 59, 170, 0.08);
+  }
+
+  .btn-primary:hover {
+    background: rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(108, 59, 170, 0.4);
+    box-shadow: 0 6px 25px rgba(0, 0, 0, 0.6), 
+                0 0 0 1px rgba(255, 255, 255, 0.08),
+                0 0 20px rgba(108, 59, 170, 0.3),
+                inset 0 0 20px rgba(108, 59, 170, 0.1);
+    transform: translateY(-2px);
   }
   
   .btn-secondary {
-    @apply btn border border-border bg-surface text-foreground hover:bg-surface-2 focus:ring-primary;
+    @apply btn text-foreground;
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(108, 59, 170, 0.15);
+    box-shadow: 0 2px 15px rgba(0, 0, 0, 0.3), 
+                0 0 0 1px rgba(255, 255, 255, 0.02),
+                0 0 8px rgba(108, 59, 170, 0.1),
+                inset 0 0 8px rgba(108, 59, 170, 0.03);
+  }
+
+  .btn-secondary:hover {
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(108, 59, 170, 0.25);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4), 
+                0 0 0 1px rgba(255, 255, 255, 0.05),
+                0 0 12px rgba(108, 59, 170, 0.15),
+                inset 0 0 12px rgba(108, 59, 170, 0.05);
   }
 
   .btn-ghost {
-    @apply btn text-foreground-muted hover:bg-surface hover:text-foreground focus:ring-primary;
+    @apply btn text-foreground-muted;
+    background: rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(108, 59, 170, 0.1);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2), 
+                0 0 0 1px rgba(255, 255, 255, 0.01),
+                0 0 5px rgba(108, 59, 170, 0.05);
+  }
+
+  .btn-ghost:hover {
+    @apply text-foreground;
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(108, 59, 170, 0.2);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3), 
+                0 0 0 1px rgba(255, 255, 255, 0.03),
+                0 0 8px rgba(108, 59, 170, 0.1);
   }
   
   .input {
