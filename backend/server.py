@@ -107,7 +107,7 @@ class TravelItinerary(BaseModel):
 # AI Content Generation Service
 class AIContentGenerator:
     def __init__(self):
-        self.api_key = EMERGENT_LLM_KEY
+        self.api_key = os.getenv("EMERGENT_LLM_KEY")
     
     async def generate_destination_info(self, destinations: List[str], theme: str, duration_days: int, party_size: int) -> DestinationInfo:
         """Generate personalized destination information using AI for multiple destinations"""
