@@ -160,12 +160,35 @@
     @apply block text-sm font-medium text-foreground;
   }
 
-  .theme-card {
-    @apply relative overflow-hidden rounded-lg border border-border bg-surface p-4 cursor-pointer transition-all duration-300 hover:border-primary hover:shadow-glow;
+  .glass-theme-card {
+    @apply relative overflow-hidden rounded-lg p-6 cursor-pointer transition-all duration-300;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(108, 59, 170, 0.15);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3), 
+                0 0 0 1px rgba(255, 255, 255, 0.02),
+                0 0 10px rgba(108, 59, 170, 0.1),
+                inset 0 0 10px rgba(108, 59, 170, 0.03);
   }
 
-  .theme-card.selected {
-    @apply border-primary bg-primary/5 shadow-glow;
+  .glass-theme-card:hover {
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(108, 59, 170, 0.25);
+    box-shadow: 0 6px 25px rgba(0, 0, 0, 0.4), 
+                0 0 0 1px rgba(255, 255, 255, 0.05),
+                0 0 15px rgba(108, 59, 170, 0.2),
+                inset 0 0 15px rgba(108, 59, 170, 0.05);
+    transform: translateY(-2px);
+  }
+
+  .glass-theme-card.selected {
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(108, 59, 170, 0.4);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5), 
+                0 0 0 1px rgba(255, 255, 255, 0.08),
+                0 0 20px rgba(108, 59, 170, 0.3),
+                inset 0 0 20px rgba(108, 59, 170, 0.08);
   }
 
   .activity-item {
