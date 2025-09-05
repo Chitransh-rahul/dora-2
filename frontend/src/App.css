@@ -156,19 +156,21 @@
   100% { transform: translateX(100%); }
 }
 
-/* Hero text gradient animation */
+/* Hero text gradient animation with purple accents */
 .hero-gradient {
-  background: linear-gradient(-45deg, #ffffff, #a3a3a3, #ffffff, #d4d4d4);
+  background: linear-gradient(-45deg, #ffffff, #e0e7ff, #c7d2fe, #a5b4fc, #8b5cf6);
   background-size: 400% 400%;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  animation: gradient-shift 6s ease-in-out infinite;
+  animation: gradient-shift 8s ease-in-out infinite;
 }
 
 @keyframes gradient-shift {
   0%, 100% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
+  25% { background-position: 100% 0%; }
+  50% { background-position: 100% 100%; }
+  75% { background-position: 0% 100%; }
 }
 
 /* Mobile optimizations */
