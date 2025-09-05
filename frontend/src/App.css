@@ -158,14 +158,15 @@
   100% { transform: translateX(100%); }
 }
 
-/* Hero text gradient animation with purple accents */
+/* Hero text gradient animation with subtle neon accents */
 .hero-gradient {
-  background: linear-gradient(-45deg, #ffffff, #e0e7ff, #c7d2fe, #a5b4fc, #8b5cf6);
+  background: linear-gradient(-45deg, #ffffff, #f8fafc, #e2e8f0, #c7d2fe, #a5b4fc);
   background-size: 400% 400%;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  animation: gradient-shift 8s ease-in-out infinite;
+  animation: gradient-shift 10s ease-in-out infinite;
+  filter: drop-shadow(0 0 20px rgba(192, 132, 252, 0.3));
 }
 
 @keyframes gradient-shift {
