@@ -2,16 +2,24 @@ from fastapi import FastAPI, HTTPException, Depends, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 from typing import List, Optional, Dict, Any
-from datetime import datetime, date
+from datetime import datetime, date, timedelta
 import os
 import asyncio
 import uuid
+import json
+import requests
 from dotenv import load_dotenv
 import motor.motor_asyncio
 from bson import ObjectId
 
 # Emergent LLM Integration
 from emergentintegrations.llm.chat import LlmChat, UserMessage
+
+# JWT Authentication
+import jwt
+from jwt import PyJWTError
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from functools import lru_cache
 
 # Load environment variables
 load_dotenv()
