@@ -6,8 +6,12 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        // Dark theme colors based on reference
+        // Dark theme colors with purple gradient support
         background: '#000000',
+        'background-gradient': {
+          'from': '#6c3baa',
+          'to': '#000000',
+        },
         surface: '#111111',
         'surface-2': '#1a1a1a',
         foreground: '#ffffff',
@@ -17,11 +21,17 @@ module.exports = {
           DEFAULT: '#ffffff',
           hover: '#f5f5f5',
         },
-        accent: '#333333',
+        accent: '#6c3baa',
+        'accent-dark': '#4f2a80',
         border: '#262626',
         input: '#1a1a1a',
         success: '#22c55e',
         error: '#ef4444',
+        purple: {
+          DEFAULT: '#6c3baa',
+          light: '#8b5cf6',
+          dark: '#4f2a80',
+        },
       },
       fontFamily: {
         sans: ['Inter', 'system-ui', 'sans-serif'],
