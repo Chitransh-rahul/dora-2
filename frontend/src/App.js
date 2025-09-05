@@ -738,26 +738,38 @@ function App() {
   };
   
   return (
-    <div className="min-h-screen">
-      <Header />
+    <div className="min-h-screen relative">
+      {/* Glowing Purple Neon Background */}
+      <div className="fixed inset-0 bg-black">
+        <div className="absolute inset-0 bg-gradient-radial from-purple-600/30 via-purple-900/20 to-transparent"></div>
+        <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-transparent via-[#6c3baa]/20 to-transparent"></div>
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-[#6c3baa]/30 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-[#6c3baa]/25 rounded-full blur-3xl animate-pulse delay-1000"></div>
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-gradient-radial from-[#6c3baa]/15 to-transparent rounded-full blur-2xl animate-pulse delay-500"></div>
+      </div>
       
-      {currentView === 'hero' && (
-        <HeroSection onStartPlanning={handleStartPlanning} />
-      )}
-      
-      {currentView === 'form' && (
-        <div className="pt-20">
-          <TravelForm onSubmit={handleFormSubmit} isLoading={isLoading} />
-        </div>
-      )}
-      
-      {currentView === 'loading' && <LoadingScreen />}
-      
-      {currentView === 'itinerary' && itinerary && (
-        <div className="pt-20">
-          <ItineraryPreview itinerary={itinerary} onDownload={handleDownload} />
-        </div>
-      )}
+      {/* Content */}
+      <div className="relative z-10">
+        <Header />
+        
+        {currentView === 'hero' && (
+          <HeroSection onStartPlanning={handleStartPlanning} />
+        )}
+        
+        {currentView === 'form' && (
+          <div className="pt-20">
+            <TravelForm onSubmit={handleFormSubmit} isLoading={isLoading} />
+          </div>
+        )}
+        
+        {currentView === 'loading' && <LoadingScreen />}
+        
+        {currentView === 'itinerary' && itinerary && (
+          <div className="pt-20">
+            <ItineraryPreview itinerary={itinerary} onDownload={handleDownload} />
+          </div>
+        )}
+      </div>
     </div>
   );
 }
