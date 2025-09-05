@@ -118,23 +118,79 @@ const selectStyles = {
   })
 };
 
-// Header Component
-const Header = () => (
-  <header className="fixed top-6 left-1/2 floating-header z-50">
-    <div className="glass-card rounded-full px-8 py-4 shadow-glow border border-border/30 transition-all duration-300">
-      <div className="flex items-center justify-center gap-8">
-        <div className="flex items-center gap-3">
-          <Globe className="w-6 h-6 text-foreground" />
-          <span className="text-xl font-bold text-foreground">Dora</span>
+// Header Component with Authentication
+const Header = () => {
+  const { isAuthenticated, isLoading, user } = useAuth0();
+  const { logout } = useAuth();
+  const [showAuthModal, setShowAuthModal] = useState(false);
+
+  const handleAuthClick = () => {
+    if (isAuthenticated) {
+      // Show user menu or logout directly
+      logout();
+    } else {
+      setShowAuthModal(true);
+    }
+  };
+
+  return (
+    <>
+      <header className="fixed top-6 left-1/2 floating-header z-50">
+        <div className="glass-card rounded-full px-8 py-4 shadow-glow border border-border/30 transition-all duration-300">
+          <div className="flex items-center justify-center gap-8">
+            <div className="flex items-center gap-3">
+              <Globe className="w-6 h-6 text-foreground" />
+              <span className="text-xl font-bold text-foreground">Dora</span>
+            </div>
+            <div className="w-px h-6 bg-border/50"></div>
+            
+            {isLoading ? (
+              <div className="flex items-center gap-2">
+                <Loader2 className="w-4 h-4 animate-spin" />
+                <span className="text-sm text-foreground-muted">Loading...</span>
+              </div>
+            ) : isAuthenticated ? (
+              <div className="flex items-center gap-4">
+                <div className="flex items-center gap-2">
+                  {user?.picture && (
+                    <img 
+                      src={user.picture} 
+                      alt={user.name} 
+                      className="w-6 h-6 rounded-full"
+                    />
+                  )}
+                  <span className="text-sm font-medium text-foreground">
+                    {user?.name?.split(' ')[0] || 'User'}
+                  </span>
+                </div>
+                <button 
+                  onClick={logout}
+                  className="btn-ghost px-4 py-2 text-sm font-medium rounded-full flex items-center gap-2"
+                >
+                  <LogOut className="w-4 h-4" />
+                  Sign Out
+                </button>
+              </div>
+            ) : (
+              <button 
+                onClick={handleAuthClick}
+                className="btn-ghost px-6 py-2 text-sm font-medium rounded-full flex items-center gap-2"
+              >
+                <User className="w-4 h-4" />
+                Sign In
+              </button>
+            )}
+          </div>
         </div>
-        <div className="w-px h-6 bg-border/50"></div>
-        <button className="btn-ghost px-6 py-2 text-sm font-medium rounded-full">
-          Sign In
-        </button>
-      </div>
-    </div>
-  </header>
-);
+      </header>
+
+      <AuthModal 
+        isOpen={showAuthModal} 
+        onClose={() => setShowAuthModal(false)} 
+      />
+    </>
+  );
+};
 
 // Hero Section
 const HeroSection = ({ onStartPlanning }) => (
