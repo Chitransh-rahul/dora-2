@@ -82,12 +82,33 @@
   @apply opacity-100 translate-y-0;
 }
 
-/* Glass morphism effects */
+/* Enhanced glass morphism effects */
 .glass-effect {
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  background: rgba(26, 26, 26, 0.8);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  background: rgba(26, 26, 26, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), 
+              0 0 0 1px rgba(255, 255, 255, 0.05);
+}
+
+/* Floating header specific styles */
+.floating-header {
+  animation: float 6s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px) translateX(-50%); }
+  50% { transform: translateY(-5px) translateX(-50%); }
+}
+
+/* Glass card hover effect */
+.glass-card:hover {
+  background: rgba(26, 26, 26, 0.4);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4), 
+              0 0 0 1px rgba(255, 255, 255, 0.1);
+  transform: translateY(-2px);
+  transition: all 0.3s ease;
 }
 
 /* Button hover effects */
