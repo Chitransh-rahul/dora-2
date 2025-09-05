@@ -101,8 +101,8 @@ class AIContentGenerator:
     def __init__(self):
         self.api_key = EMERGENT_LLM_KEY
     
-    async def generate_destination_info(self, destination: str, theme: str, duration_days: int, party_size: int) -> DestinationInfo:
-        """Generate personalized destination information using AI"""
+    async def generate_destination_info(self, destinations: List[str], theme: str, duration_days: int, party_size: int) -> DestinationInfo:
+        """Generate personalized destination information using AI for multiple destinations"""
         try:
             # Create unique session ID for this request
             session_id = f"destination-{uuid.uuid4().hex[:8]}"
@@ -111,33 +111,35 @@ class AIContentGenerator:
             chat = LlmChat(
                 api_key=self.api_key,
                 session_id=session_id,
-                system_message=f"""You are a knowledgeable travel expert specializing in creating personalized destination guides. 
+                system_message=f"""You are a knowledgeable travel expert specializing in creating personalized destination guides for multi-city trips. 
                 
                 Generate travel information that is:
-                - Accurate and helpful
+                - Accurate and helpful for multiple destinations
                 - Tailored to the specific travel theme and group composition
-                - Practical and actionable
+                - Practical and actionable for multi-city travel
                 - Culturally sensitive and respectful
                 
-                Focus on providing genuine value to travelers planning their trip."""
+                Focus on providing genuine value to travelers planning their multi-destination trip."""
             ).with_model("openai", "gpt-4o-mini")
             
+            destinations_str = ", ".join(destinations)
+            
             # Craft the prompt based on user preferences
-            prompt = f"""Create personalized travel information for {destination} for a {theme.lower()} trip.
+            prompt = f"""Create personalized travel information for a multi-city trip to {destinations_str} for a {theme.lower()} trip.
 
 Trip Details:
-- Destination: {destination}
+- Destinations: {destinations_str}
 - Travel Theme: {theme}
 - Duration: {duration_days} days
 - Group Size: {party_size} people
 
 Please provide:
 
-1. INTRODUCTION (2-3 sentences): A welcoming introduction to {destination} that highlights what makes it special for {theme.lower()} travelers.
+1. INTRODUCTION (2-3 sentences): A welcoming introduction to this multi-city journey highlighting what makes these destinations special for {theme.lower()} travelers.
 
-2. PACKING_TIPS (5 specific items): Essential packing recommendations tailored for {destination} and {theme.lower()} travel.
+2. PACKING_TIPS (5 specific items): Essential packing recommendations tailored for multi-city travel to these destinations and {theme.lower()} travel style.
 
-3. CULTURAL_NOTES (5 specific items): Important cultural etiquette, customs, and local tips for respectful travel in {destination}.
+3. CULTURAL_NOTES (5 specific items): Important cultural etiquette, customs, and local tips for respectful travel across these destinations.
 
 Format your response as valid JSON with this exact structure:
 {{
@@ -175,12 +177,12 @@ Only return the JSON, no additional text."""
                 )
             except json.JSONDecodeError:
                 # Fallback to enhanced mock data if JSON parsing fails
-                return self._generate_enhanced_mock_destination_info(destination, theme)
+                return self._generate_enhanced_mock_destination_info(destinations, theme)
                 
         except Exception as e:
             print(f"AI generation error: {str(e)}")
             # Fallback to enhanced mock data
-            return self._generate_enhanced_mock_destination_info(destination, theme)
+            return self._generate_enhanced_mock_destination_info(destinations, theme)
     
     def _generate_enhanced_mock_destination_info(self, destination: str, theme: str) -> DestinationInfo:
         """Enhanced fallback destination info with theme-specific content"""
