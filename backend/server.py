@@ -272,9 +272,15 @@ Only return the JSON, no additional text."""
 ai_generator = AIContentGenerator()
 
 # Mock data generators (keeping existing flight and hotel generators)
-def generate_mock_flights(origin: str, destination: str, theme: str, budget: float) -> List[FlightOption]:
-    """Generate mock flight data based on user preferences"""
+def generate_mock_flights(origin: str, destinations: List[str], theme: str, budget: float) -> List[FlightOption]:
+    """Generate mock flight data based on user preferences for multiple destinations"""
+    # For multi-city trips, show flights to the first destination
+    primary_destination = destinations[0] if destinations else "Multiple Cities"
     base_price = min(budget * 0.4, 800)  # Flight shouldn't exceed 40% of budget or $800
+    
+    # Adjust price for multi-city complexity
+    if len(destinations) > 1:
+        base_price *= 1.2  # Increase price for multi-city trips
     
     flights = [
         FlightOption(
@@ -308,8 +314,9 @@ def generate_mock_flights(origin: str, destination: str, theme: str, budget: flo
     
     return flights[:3]  # Return top 3 options
 
-def generate_mock_hotels(destination: str, theme: str, budget: float, party_size: int) -> List[HotelOption]:
-    """Generate mock hotel data based on user preferences"""
+def generate_mock_hotels(destinations: List[str], theme: str, budget: float, party_size: int) -> List[HotelOption]:
+    """Generate mock hotel data based on user preferences for multiple destinations"""
+    primary_destination = destinations[0] if destinations else "Multi-City"
     price_per_night = min(budget * 0.3 / party_size, 300)  # Hotel shouldn't exceed 30% of budget per person
     
     theme_amenities = {
@@ -326,7 +333,7 @@ def generate_mock_hotels(destination: str, theme: str, budget: float, party_size
     
     hotels = [
         HotelOption(
-            name=f"Grand {destination} Resort",
+            name=f"Grand {primary_destination} Resort",
             price_per_night=price_per_night,
             deep_link="https://booking.com/mock-link-1",
             star_rating=4,
@@ -334,7 +341,7 @@ def generate_mock_hotels(destination: str, theme: str, budget: float, party_size
             image_url="https://images.unsplash.com/photo-1566073771259-6a8506099945"
         ),
         HotelOption(
-            name=f"{destination} City Center Hotel",
+            name=f"{primary_destination} City Center Hotel",
             price_per_night=price_per_night - 30,
             deep_link="https://booking.com/mock-link-2", 
             star_rating=3,
@@ -342,7 +349,7 @@ def generate_mock_hotels(destination: str, theme: str, budget: float, party_size
             image_url="https://images.unsplash.com/photo-1551882547-ff40c63fe5fa"
         ),
         HotelOption(
-            name=f"Luxury {destination} Suites",
+            name=f"Luxury {primary_destination} Suites",
             price_per_night=price_per_night + 80,
             deep_link="https://booking.com/mock-link-3",
             star_rating=5,
@@ -353,11 +360,21 @@ def generate_mock_hotels(destination: str, theme: str, budget: float, party_size
     
     return hotels[:3]
 
-def generate_mock_itinerary_days(start_date: date, end_date: date, destination: str, theme: str) -> List[ItineraryDay]:
-    """Generate mock daily itinerary based on destination and theme"""
+def generate_mock_itinerary_days(start_date: date, end_date: date, destinations: List[str], theme: str) -> List[ItineraryDay]:
+    """Generate mock daily itinerary based on multiple destinations and theme"""
     days = []
     current_date = start_date
     day_num = 1
+    
+    # Calculate days per destination
+    total_days = (end_date - start_date).days + 1
+    destinations_count = len(destinations)
+    
+    if destinations_count == 0:
+        destinations = ["Your Destination"]
+        destinations_count = 1
+    
+    days_per_destination = max(1, total_days // destinations_count)
     
     # Theme-specific activities
     theme_activities = {
@@ -406,13 +423,18 @@ def generate_mock_itinerary_days(start_date: date, end_date: date, destination: 
         "Evening entertainment"
     ])
     
+    destination_index = 0
+    days_in_current_destination = 0
+    
     while current_date <= end_date:
+        current_destination = destinations[destination_index] if destination_index < len(destinations) else destinations[-1]
+        
         if day_num == 1:
             # Arrival day
             day_activities = [
                 Activity(
                     type="Travel",
-                    description="Arrival and check-in",
+                    description=f"Arrival in {current_destination}",
                     time="Morning",
                     details="Flight arrival and hotel check-in"
                 ),
@@ -420,7 +442,7 @@ def generate_mock_itinerary_days(start_date: date, end_date: date, destination: 
                     type="Leisure",
                     description="Explore nearby area",
                     time="Afternoon",
-                    details="Get oriented with the local neighborhood"
+                    details=f"Get oriented with {current_destination}"
                 )
             ]
         elif current_date == end_date:
@@ -439,14 +461,33 @@ def generate_mock_itinerary_days(start_date: date, end_date: date, destination: 
                     details="Hotel check-out and airport transfer"
                 )
             ]
+        elif days_in_current_destination == days_per_destination - 1 and destination_index < len(destinations) - 1:
+            # Travel to next destination
+            next_destination = destinations[destination_index + 1]
+            day_activities = [
+                Activity(
+                    type="Leisure",
+                    description=f"Morning in {current_destination}",
+                    time="Morning",
+                    details=f"Final exploration of {current_destination}"
+                ),
+                Activity(
+                    type="Travel",
+                    description=f"Travel to {next_destination}",
+                    time="Afternoon",
+                    details=f"Check-out and travel from {current_destination} to {next_destination}"
+                )
+            ]
+            destination_index += 1
+            days_in_current_destination = 0
         else:
-            # Full day
+            # Full day in current destination
             day_activities = [
                 Activity(
                     type="Sightseeing",
                     description=activities[(day_num - 2) % len(activities)],
                     time="Morning",
-                    details=f"Explore the best of {destination}"
+                    details=f"Explore the best of {current_destination}"
                 ),
                 Activity(
                     type="Dining",
@@ -458,14 +499,14 @@ def generate_mock_itinerary_days(start_date: date, end_date: date, destination: 
                     type="Culture",
                     description=activities[(day_num - 1) % len(activities)],
                     time="Afternoon",
-                    details="Immerse in local culture and traditions"
+                    details=f"Immerse in {current_destination} culture and traditions"
                 )
             ]
         
         days.append(ItineraryDay(
             day=day_num,
             date=current_date.strftime("%Y-%m-%d"),
-            summary=f"Day {day_num} in {destination}",
+            summary=f"Day {day_num} in {current_destination}",
             activities=day_activities
         ))
         
@@ -473,11 +514,12 @@ def generate_mock_itinerary_days(start_date: date, end_date: date, destination: 
         from datetime import timedelta
         current_date = current_date + timedelta(days=1)
         day_num += 1
+        days_in_current_destination += 1
     
     return days
 
-def generate_mock_utility_links(destination: str) -> UtilityLinks:
-    """Generate mock utility links"""
+def generate_mock_utility_links(destinations: List[str]) -> UtilityLinks:
+    """Generate mock utility links for multiple destinations"""
     return UtilityLinks(
         visa_info="https://dora-travel.com/visa-info",
         currency_exchange="https://wise.com/currency-converter",
