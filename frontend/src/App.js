@@ -121,15 +121,15 @@ const selectStyles = {
 
 // Header Component
 const Header = () => (
-  <header className="fixed top-6 left-1/2 transform -translate-x-1/2 z-50">
-    <div className="glass-card rounded-full px-8 py-4 shadow-glow border border-border/30">
+  <header className="fixed top-6 left-1/2 floating-header z-50">
+    <div className="glass-card rounded-full px-8 py-4 shadow-glow border border-border/30 transition-all duration-300">
       <div className="flex items-center justify-center gap-8">
         <div className="flex items-center gap-3">
           <Globe className="w-6 h-6 text-foreground" />
           <span className="text-xl font-bold text-foreground">Dora</span>
         </div>
         <div className="w-px h-6 bg-border/50"></div>
-        <button className="btn-ghost px-6 py-2 text-sm font-medium">
+        <button className="btn-ghost px-6 py-2 text-sm font-medium rounded-full">
           Sign In
         </button>
       </div>
