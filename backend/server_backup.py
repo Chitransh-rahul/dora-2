@@ -40,132 +40,14 @@ MONGO_URL = os.getenv("MONGO_URL")
 client = motor.motor_asyncio.AsyncIOMotorClient(MONGO_URL)
 database = client.dora_travel
 
-# Collections
-temporary_itineraries = database.temporary_itineraries
-permanent_itineraries = database.itineraries
-users = database.users
+# LLM Configuration
+EMERGENT_LLM_KEY = os.getenv("EMERGENT_LLM_KEY")
 
-# Create TTL index for temporary itineraries (auto-cleanup)
-async def create_indexes():
-    try:
-        await temporary_itineraries.create_index(
-            "expires_at", 
-            expireAfterSeconds=0
-        )
-        print("✅ TTL index created for temporary_itineraries")
-    except Exception as e:
-        print(f"Index creation warning: {e}")
-
-# Auth0 Configuration
-AUTH0_DOMAIN = os.getenv("AUTH0_DOMAIN", "your-tenant.auth0.com")
-AUTH0_API_AUDIENCE = os.getenv("AUTH0_API_AUDIENCE", "https://api.travel-itinerary.com") 
-AUTH0_ISSUER = f"https://{AUTH0_DOMAIN}/"
-AUTH0_ALGORITHMS = ["RS256"]
-
-# Security scheme
-security = HTTPBearer(auto_error=False)
-
-# JWKS cache
-jwks_cache = {"keys": None, "expires": 0}
-
-@lru_cache(maxsize=1)
-def get_jwks():
-    """Fetch and cache Auth0 JWKS"""
-    try:
-        response = requests.get(f"https://{AUTH0_DOMAIN}/.well-known/jwks.json", timeout=30)
-        response.raise_for_status()
-        return response.json()
-    except requests.RequestException as e:
-        print(f"Error fetching JWKS: {e}")
-        return None
-
-def verify_token(token: str) -> Optional[Dict[str, Any]]:
-    """Verify Auth0 JWT token"""
-    try:
-        # Get unverified header to find key ID
-        unverified_header = jwt.get_unverified_header(token)
-        kid = unverified_header.get("kid")
-        
-        if not kid:
-            return None
-            
-        # Get JWKS
-        jwks = get_jwks()
-        if not jwks:
-            return None
-            
-        # Find the key
-        key = None
-        for k in jwks.get("keys", []):
-            if k.get("kid") == kid:
-                key = jwt.algorithms.RSAAlgorithm.from_jwk(k)
-                break
-                
-        if key is None:
-            return None
-            
-        # Verify token
-        payload = jwt.decode(
-            token,
-            key,
-            algorithms=AUTH0_ALGORITHMS,
-            audience=AUTH0_API_AUDIENCE,
-            issuer=AUTH0_ISSUER,
-            options={
-                "verify_signature": True,
-                "verify_aud": True,
-                "verify_iss": True,
-                "verify_exp": True,
-            }
-        )
-        
-        return payload
-        
-    except PyJWTError as e:
-        print(f"Token verification failed: {e}")
-        return None
-
-async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security)) -> Optional[Dict[str, Any]]:
-    """Get current authenticated user (optional)"""
-    if not credentials or not credentials.credentials:
-        return None
-        
-    payload = verify_token(credentials.credentials)
-    if not payload:
-        return None
-        
-    return {
-        "user_id": payload.get("sub"),
-        "email": payload.get("email"),
-        "name": payload.get("name"),
-        "picture": payload.get("picture"),
-        "email_verified": payload.get("email_verified", False)
-    }
-
-async def require_auth(credentials: HTTPAuthorizationCredentials = Depends(security)) -> Dict[str, Any]:
-    """Require authentication"""
-    if not credentials or not credentials.credentials:
-        raise HTTPException(
-            status_code=401,
-            detail="Authentication required",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-        
-    user = await get_current_user(credentials)
-    if not user:
-        raise HTTPException(
-            status_code=401,
-            detail="Invalid authentication token",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-        
-    return user
-
-# Enhanced Pydantic models
+# Pydantic models
 class TravelForm(BaseModel):
     user_name: str
     origin_city: str
-    destinations: List[str]
+    destinations: List[str]  # Changed to support multiple destinations
     start_date: date
     end_date: date
     travel_theme: str
@@ -173,20 +55,6 @@ class TravelForm(BaseModel):
     budget_per_person: float
     currency: str = "USD"
 
-class TemporaryItinerary(BaseModel):
-    session_id: str
-    user_email: Optional[str] = None
-    user_id: Optional[str] = None
-    form_data: Dict[str, Any]
-    generated_itinerary: Dict[str, Any]
-    created_at: datetime
-    expires_at: datetime
-    status: str = "temporary"  # temporary, auth_pending, converting
-
-class ItineraryConversion(BaseModel):
-    session_id: str
-
-# Existing models remain the same...
 class FlightOption(BaseModel):
     airline: str
     price: float
@@ -228,7 +96,6 @@ class UtilityLinks(BaseModel):
     transportation: Optional[str] = None
 
 class TravelItinerary(BaseModel):
-    session_id: str
     user: Dict[str, Any]
     trip: Dict[str, Any]
     flights: List[FlightOption]
@@ -237,7 +104,7 @@ class TravelItinerary(BaseModel):
     destination_info: DestinationInfo
     utility_links: UtilityLinks
 
-# AI Content Generation Service (unchanged)
+# AI Content Generation Service
 class AIContentGenerator:
     def __init__(self):
         self.api_key = os.getenv("EMERGENT_LLM_KEY")
@@ -245,8 +112,10 @@ class AIContentGenerator:
     async def generate_destination_info(self, destinations: List[str], theme: str, duration_days: int, party_size: int) -> DestinationInfo:
         """Generate personalized destination information using AI for multiple destinations"""
         try:
+            # Create unique session ID for this request
             session_id = f"destination-{uuid.uuid4().hex[:8]}"
             
+            # Initialize LLM chat
             chat = LlmChat(
                 api_key=self.api_key,
                 session_id=session_id,
@@ -263,6 +132,7 @@ class AIContentGenerator:
             
             destinations_str = ", ".join(destinations)
             
+            # Craft the prompt based on user preferences
             prompt = f"""Create personalized travel information for a multi-city trip to {destinations_str} for a {theme.lower()} trip.
 
 Trip Details:
@@ -300,9 +170,11 @@ Format your response as valid JSON with this exact structure:
 
 Only return the JSON, no additional text."""
             
+            # Send message to AI
             user_message = UserMessage(text=prompt)
             response = await chat.send_message(user_message)
             
+            # Parse AI response
             import json
             try:
                 ai_data = json.loads(response)
@@ -312,10 +184,12 @@ Only return the JSON, no additional text."""
                     cultural_notes=ai_data["cultural_notes"]
                 )
             except json.JSONDecodeError:
+                # Fallback to enhanced mock data if JSON parsing fails
                 return self._generate_enhanced_mock_destination_info(destinations, theme)
                 
         except Exception as e:
             print(f"AI generation error: {str(e)}")
+            # Fallback to enhanced mock data
             return self._generate_enhanced_mock_destination_info(destinations, theme)
     
     def _generate_enhanced_mock_destination_info(self, destinations: List[str], theme: str) -> DestinationInfo:
@@ -328,7 +202,7 @@ Only return the JSON, no additional text."""
                 "packing": [
                     "Child-friendly snacks and entertainment for multi-city travel",
                     "First aid kit with child-specific medications",
-                    "Comfortable strollers or carrier for young children",  
+                    "Comfortable strollers or carrier for young children",
                     "Sun protection items for different climates (hats, sunscreen, UV clothing)",
                     "Portable chargers and extra batteries for devices"
                 ],
@@ -338,6 +212,40 @@ Only return the JSON, no additional text."""
                     "Understand local customs regarding children in public spaces",
                     "Be aware of local emergency numbers and hospitals in each city",
                     "Respect quiet hours and local family traditions across destinations"
+                ]
+            },
+            "Business": {
+                "intro": f"Welcome to your multi-city business journey across {destinations_str}! These dynamic business hubs offer excellent networking opportunities, world-class conference facilities, and efficient infrastructure perfect for productive business travel across multiple markets.",
+                "packing": [
+                    "Professional attire suitable for different business cultures",
+                    "Reliable laptop with international adapters for all destinations",
+                    "Business cards and networking materials",
+                    "Multiple backup chargers for extended travel",
+                    "Comfortable dress shoes for long days across cities"
+                ],
+                "culture": [
+                    "Research local business etiquette and meeting customs for each destination",
+                    "Understand appropriate greeting styles and gift-giving across cultures",
+                    "Learn about punctuality expectations in different business environments",
+                    "Respect local business hours and holiday schedules in each location",
+                    "Be aware of dining customs for business meals across destinations"
+                ]
+            },
+            "Luxury": {
+                "intro": f"Welcome to your luxury multi-city journey across {destinations_str}! These sophisticated destinations offer world-class luxury experiences, from premium accommodations to exclusive cultural encounters, perfect for discerning travelers seeking the finest experiences across multiple incredible locations.",
+                "packing": [
+                    "Elegant evening wear suitable for fine dining across destinations",
+                    "High-quality comfortable walking shoes for luxury exploration",
+                    "Premium skincare for different climate conditions",
+                    "Sophisticated accessories for upscale venues in each city",
+                    "Quality camera to capture memorable moments across locations"
+                ],
+                "culture": [
+                    "Learn about local luxury customs and etiquette in each destination",
+                    "Understand tipping expectations at high-end establishments across cities",
+                    "Research dress codes for exclusive venues in different locations",
+                    "Respect local traditions while enjoying premium experiences",
+                    "Be mindful of photography policies at luxury locations"
                 ]
             }
         }
@@ -371,15 +279,16 @@ Only return the JSON, no additional text."""
 # Initialize AI service
 ai_generator = AIContentGenerator()
 
-# Mock data generators remain the same but updated for multiple destinations...
-
+# Mock data generators (keeping existing flight and hotel generators)
 def generate_mock_flights(origin: str, destinations: List[str], theme: str, budget: float) -> List[FlightOption]:
-    """Generate mock flight data for multiple destinations"""
+    """Generate mock flight data based on user preferences for multiple destinations"""
+    # For multi-city trips, show flights to the first destination
     primary_destination = destinations[0] if destinations else "Multiple Cities"
-    base_price = min(budget * 0.4, 800)
+    base_price = min(budget * 0.4, 800)  # Flight shouldn't exceed 40% of budget or $800
     
+    # Adjust price for multi-city complexity
     if len(destinations) > 1:
-        base_price *= 1.2
+        base_price *= 1.2  # Increase price for multi-city trips
     
     flights = [
         FlightOption(
@@ -411,12 +320,12 @@ def generate_mock_flights(origin: str, destinations: List[str], theme: str, budg
         )
     ]
     
-    return flights[:3]
+    return flights[:3]  # Return top 3 options
 
 def generate_mock_hotels(destinations: List[str], theme: str, budget: float, party_size: int) -> List[HotelOption]:
-    """Generate mock hotel data for multiple destinations"""
+    """Generate mock hotel data based on user preferences for multiple destinations"""
     primary_destination = destinations[0] if destinations else "Multi-City"
-    price_per_night = min(budget * 0.3 / party_size, 300)
+    price_per_night = min(budget * 0.3 / party_size, 300)  # Hotel shouldn't exceed 30% of budget per person
     
     theme_amenities = {
         "Family": ["Pool", "Kids Club", "Playground", "Family Rooms"],
@@ -460,11 +369,12 @@ def generate_mock_hotels(destinations: List[str], theme: str, budget: float, par
     return hotels[:3]
 
 def generate_mock_itinerary_days(start_date: date, end_date: date, destinations: List[str], theme: str) -> List[ItineraryDay]:
-    """Generate mock daily itinerary for multiple destinations"""
+    """Generate mock daily itinerary based on multiple destinations and theme"""
     days = []
     current_date = start_date
     day_num = 1
     
+    # Calculate days per destination
     total_days = (end_date - start_date).days + 1
     destinations_count = len(destinations)
     
@@ -474,6 +384,7 @@ def generate_mock_itinerary_days(start_date: date, end_date: date, destinations:
     
     days_per_destination = max(1, total_days // destinations_count)
     
+    # Theme-specific activities
     theme_activities = {
         "Family": [
             "Visit local zoo or aquarium",
@@ -527,6 +438,7 @@ def generate_mock_itinerary_days(start_date: date, end_date: date, destinations:
         current_destination = destinations[destination_index] if destination_index < len(destinations) else destinations[-1]
         
         if day_num == 1:
+            # Arrival day
             day_activities = [
                 Activity(
                     type="Travel",
@@ -542,6 +454,7 @@ def generate_mock_itinerary_days(start_date: date, end_date: date, destinations:
                 )
             ]
         elif current_date == end_date:
+            # Departure day
             day_activities = [
                 Activity(
                     type="Leisure", 
@@ -557,6 +470,7 @@ def generate_mock_itinerary_days(start_date: date, end_date: date, destinations:
                 )
             ]
         elif days_in_current_destination == days_per_destination - 1 and destination_index < len(destinations) - 1:
+            # Travel to next destination
             next_destination = destinations[destination_index + 1]
             day_activities = [
                 Activity(
@@ -575,6 +489,7 @@ def generate_mock_itinerary_days(start_date: date, end_date: date, destinations:
             destination_index += 1
             days_in_current_destination = 0
         else:
+            # Full day in current destination
             day_activities = [
                 Activity(
                     type="Sightseeing",
@@ -603,6 +518,7 @@ def generate_mock_itinerary_days(start_date: date, end_date: date, destinations:
             activities=day_activities
         ))
         
+        # Move to next day
         from datetime import timedelta
         current_date = current_date + timedelta(days=1)
         day_num += 1
@@ -619,24 +535,19 @@ def generate_mock_utility_links(destinations: List[str]) -> UtilityLinks:
         transportation="https://uber.com/cities"
     )
 
-@app.on_event("startup")
-async def startup_event():
-    """Initialize application on startup"""
-    await create_indexes()
-
 @app.get("/")
 async def root():
-    return {"message": "Dora Travel API v2.0 with Auth & Temporary Storage!"}
+    return {"message": "Dora Travel API v2.0 is running with AI-powered content generation!"}
 
 @app.post("/api/generate-itinerary", response_model=TravelItinerary)
 async def generate_itinerary(form_data: TravelForm):
-    """Generate a travel itinerary and store temporarily (7 days + 1 day buffer)"""
+    """Generate a travel itinerary with AI-powered destination information for multiple destinations"""
     try:
         duration_days = (form_data.end_date - form_data.start_date).days + 1
-        session_id = str(uuid.uuid4())
         
-        # Generate data in parallel
+        # Generate data in parallel for better performance
         async def generate_all_data():
+            # Start AI generation (this takes the longest)
             ai_destination_task = ai_generator.generate_destination_info(
                 form_data.destinations,
                 form_data.travel_theme,
@@ -644,6 +555,7 @@ async def generate_itinerary(form_data: TravelForm):
                 form_data.party_size
             )
             
+            # Generate mock data (these are fast)
             flights = generate_mock_flights(
                 form_data.origin_city, 
                 form_data.destinations, 
@@ -667,22 +579,24 @@ async def generate_itinerary(form_data: TravelForm):
             
             utility_links = generate_mock_utility_links(form_data.destinations)
             
+            # Wait for AI generation to complete
             destination_info = await ai_destination_task
             
             return flights, hotels, itinerary_days, destination_info, utility_links
         
+        # Generate all data
         flights, hotels, itinerary_days, destination_info, utility_links = await generate_all_data()
         
         # Compile the complete itinerary
-        itinerary_data = {
-            "user": {
+        itinerary = TravelItinerary(
+            user={
                 "name": form_data.user_name,
                 "budget": form_data.budget_per_person,
                 "currency": form_data.currency,
                 "theme": form_data.travel_theme,
                 "party_size": form_data.party_size
             },
-            "trip": {
+            trip={
                 "origin": form_data.origin_city,
                 "destination": ", ".join(form_data.destinations),
                 "destinations": form_data.destinations,
@@ -690,31 +604,11 @@ async def generate_itinerary(form_data: TravelForm):
                 "end_date": form_data.end_date.strftime("%Y-%m-%d"),
                 "duration_days": duration_days
             },
-            "flights": [flight.dict() for flight in flights],
-            "accommodations": [hotel.dict() for hotel in hotels],
-            "itinerary_days": [day.dict() for day in itinerary_days],
-            "destination_info": destination_info.dict(),
-            "utility_links": utility_links.dict()
-        }
-        
-        # Store temporarily (7 days + buffer)
-        temp_itinerary = {
-            "session_id": session_id,
-            "user_email": None,
-            "user_id": None,
-            "form_data": form_data.dict(),
-            "generated_itinerary": itinerary_data,
-            "created_at": datetime.utcnow(),
-            "expires_at": datetime.utcnow() + timedelta(days=7),  # 7 days
-            "status": "temporary"
-        }
-        
-        await temporary_itineraries.insert_one(temp_itinerary)
-        
-        # Return itinerary with session_id
-        itinerary = TravelItinerary(
-            session_id=session_id,
-            **itinerary_data
+            flights=flights,
+            accommodations=hotels,
+            itinerary_days=itinerary_days,
+            destination_info=destination_info,
+            utility_links=utility_links
         )
         
         return itinerary
@@ -723,110 +617,30 @@ async def generate_itinerary(form_data: TravelForm):
         print(f"Error generating itinerary: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error generating itinerary: {str(e)}")
 
-@app.get("/api/itinerary/{session_id}")
-async def get_itinerary_by_session(session_id: str):
-    """Retrieve itinerary by session ID"""
-    try:
-        temp_itinerary = await temporary_itineraries.find_one({"session_id": session_id})
-        
-        if not temp_itinerary:
-            raise HTTPException(status_code=404, detail="Itinerary not found or expired")
-        
-        itinerary_data = temp_itinerary["generated_itinerary"]
-        itinerary = TravelItinerary(
-            session_id=session_id,
-            **itinerary_data
-        )
-        
-        return itinerary
-        
-    except Exception as e:
-        print(f"Error retrieving itinerary: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Error retrieving itinerary: {str(e)}")
-
-@app.post("/api/prepare-auth/{session_id}")
-async def prepare_auth(session_id: str):
-    """Extend expiry before authentication (1 day buffer)"""
-    try:
-        result = await temporary_itineraries.update_one(
-            {"session_id": session_id},
-            {
-                "$set": {
-                    "expires_at": datetime.utcnow() + timedelta(days=1),  # 1 day buffer
-                    "status": "auth_pending"
-                }
-            }
-        )
-        
-        if result.matched_count == 0:
-            raise HTTPException(status_code=404, detail="Itinerary not found")
-        
-        return {"success": True, "message": "Itinerary prepared for authentication"}
-        
-    except Exception as e:
-        print(f"Error preparing auth: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Error preparing auth: {str(e)}")
-
-@app.post("/api/convert-itinerary")
-async def convert_itinerary(
-    conversion: ItineraryConversion,
-    current_user: Dict[str, Any] = Depends(require_auth)
-):
-    """Convert temporary itinerary to permanent storage after authentication"""
-    try:
-        # Find temporary itinerary
-        temp_itinerary = await temporary_itineraries.find_one({"session_id": conversion.session_id})
-        
-        if not temp_itinerary:
-            raise HTTPException(status_code=404, detail="Temporary itinerary not found")
-        
-        # Create permanent itinerary
-        permanent_itinerary = {
-            "user_id": current_user["user_id"],
-            "user_email": current_user["email"],
-            "form_data": temp_itinerary["form_data"],
-            "generated_itinerary": temp_itinerary["generated_itinerary"],
-            "created_at": temp_itinerary["created_at"],
-            "converted_at": datetime.utcnow(),
-            "original_session_id": conversion.session_id
-        }
-        
-        # Insert permanent record
-        result = await permanent_itineraries.insert_one(permanent_itinerary)
-        
-        # Delete temporary record
-        await temporary_itineraries.delete_one({"session_id": conversion.session_id})
-        
-        return {
-            "success": True,
-            "message": "Itinerary successfully converted to permanent storage",
-            "itinerary_id": str(result.inserted_id)
-        }
-        
-    except Exception as e:
-        print(f"Error converting itinerary: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Error converting itinerary: {str(e)}")
-
-@app.get("/api/my-itineraries")
-async def get_user_itineraries(current_user: Dict[str, Any] = Depends(require_auth)):
-    """Get authenticated user's permanent itineraries"""
-    try:
-        cursor = permanent_itineraries.find({"user_id": current_user["user_id"]})
-        itineraries = await cursor.to_list(length=100)
-        
-        # Convert ObjectId to string
-        for itinerary in itineraries:
-            itinerary["_id"] = str(itinerary["_id"])
-        
-        return {"itineraries": itineraries}
-        
-    except Exception as e:
-        print(f"Error retrieving user itineraries: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Error retrieving user itineraries: {str(e)}")
-
 @app.get("/api/health")
 async def health_check():
-    return {"status": "healthy", "service": "Dora Travel API v2.0", "auth_enabled": True}
+    return {"status": "healthy", "service": "Dora Travel API v2.0", "ai_enabled": bool(os.getenv("EMERGENT_LLM_KEY"))}
+
+@app.get("/api/ai-test")
+async def test_ai_integration():
+    """Test endpoint to verify AI integration is working"""
+    try:
+        test_info = await ai_generator.generate_destination_info("Paris, France", "Luxury", 5, 2)
+        return {
+            "status": "success",
+            "ai_working": True,
+            "sample_content": {
+                "introduction": test_info.introduction[:100] + "...",
+                "packing_tips_count": len(test_info.packing_tips),
+                "cultural_notes_count": len(test_info.cultural_notes)
+            }
+        }
+    except Exception as e:
+        return {
+            "status": "error",
+            "ai_working": False,
+            "error": str(e)
+        }
 
 if __name__ == "__main__":
     import uvicorn
