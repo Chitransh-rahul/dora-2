@@ -619,7 +619,7 @@ async def generate_itinerary(form_data: TravelForm):
 
 @app.get("/api/health")
 async def health_check():
-    return {"status": "healthy", "service": "Dora Travel API v2.0", "ai_enabled": bool(EMERGENT_LLM_KEY)}
+    return {"status": "healthy", "service": "Dora Travel API v2.0", "ai_enabled": bool(os.getenv("EMERGENT_LLM_KEY"))}
 
 @app.get("/api/ai-test")
 async def test_ai_integration():
