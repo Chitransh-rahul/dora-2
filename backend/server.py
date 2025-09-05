@@ -533,7 +533,7 @@ async def root():
 
 @app.post("/api/generate-itinerary", response_model=TravelItinerary)
 async def generate_itinerary(form_data: TravelForm):
-    """Generate a travel itinerary with AI-powered destination information"""
+    """Generate a travel itinerary with AI-powered destination information for multiple destinations"""
     try:
         duration_days = (form_data.end_date - form_data.start_date).days + 1
         
@@ -541,7 +541,7 @@ async def generate_itinerary(form_data: TravelForm):
         async def generate_all_data():
             # Start AI generation (this takes the longest)
             ai_destination_task = ai_generator.generate_destination_info(
-                form_data.destination,
+                form_data.destinations,
                 form_data.travel_theme,
                 duration_days,
                 form_data.party_size
@@ -550,13 +550,13 @@ async def generate_itinerary(form_data: TravelForm):
             # Generate mock data (these are fast)
             flights = generate_mock_flights(
                 form_data.origin_city, 
-                form_data.destination, 
+                form_data.destinations, 
                 form_data.travel_theme, 
                 form_data.budget_per_person
             )
             
             hotels = generate_mock_hotels(
-                form_data.destination,
+                form_data.destinations,
                 form_data.travel_theme,
                 form_data.budget_per_person,
                 form_data.party_size
@@ -565,11 +565,11 @@ async def generate_itinerary(form_data: TravelForm):
             itinerary_days = generate_mock_itinerary_days(
                 form_data.start_date,
                 form_data.end_date,
-                form_data.destination,
+                form_data.destinations,
                 form_data.travel_theme
             )
             
-            utility_links = generate_mock_utility_links(form_data.destination)
+            utility_links = generate_mock_utility_links(form_data.destinations)
             
             # Wait for AI generation to complete
             destination_info = await ai_destination_task
@@ -590,7 +590,8 @@ async def generate_itinerary(form_data: TravelForm):
             },
             trip={
                 "origin": form_data.origin_city,
-                "destination": form_data.destination,
+                "destination": ", ".join(form_data.destinations),
+                "destinations": form_data.destinations,
                 "start_date": form_data.start_date.strftime("%Y-%m-%d"),
                 "end_date": form_data.end_date.strftime("%Y-%m-%d"),
                 "duration_days": duration_days
