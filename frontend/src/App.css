@@ -82,14 +82,15 @@
   @apply opacity-100 translate-y-0;
 }
 
-/* Enhanced glass morphism effects with purple gradient */
+/* Enhanced glass morphism effects with subtle neon purple */
 .glass-effect {
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
-  background: rgba(26, 26, 26, 0.15);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: 0 8px 32px rgba(108, 59, 170, 0.2), 
-              0 0 0 1px rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  background: rgba(10, 10, 10, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6), 
+              0 0 0 1px rgba(255, 255, 255, 0.03),
+              0 0 15px rgba(108, 59, 170, 0.1);
 }
 
 /* Floating header specific styles */
@@ -102,12 +103,13 @@
   50% { transform: translateY(-5px) translateX(-50%); }
 }
 
-/* Glass card hover effect with purple glow */
+/* Glass card hover effect with subtle neon glow */
 .glass-card:hover {
-  background: rgba(26, 26, 26, 0.25);
-  box-shadow: 0 12px 40px rgba(108, 59, 170, 0.3), 
-              0 0 0 1px rgba(255, 255, 255, 0.1),
-              0 0 20px rgba(108, 59, 170, 0.4);
+  background: rgba(10, 10, 10, 0.6);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.7), 
+              0 0 0 1px rgba(255, 255, 255, 0.05),
+              0 0 25px rgba(108, 59, 170, 0.2),
+              0 0 50px rgba(192, 132, 252, 0.1);
   transform: translateY(-2px);
   transition: all 0.3s ease;
 }
