@@ -404,8 +404,10 @@ const TravelForm = ({ onSubmit, isLoading }) => {
                       selected={formData.start_date}
                       onChange={(date) => setFormData({...formData, start_date: date})}
                       className="input w-full"
+                      wrapperClassName="w-full"
                       placeholderText="Select start date"
                       minDate={new Date()}
+                      dateFormat="yyyy-MM-dd"
                       required
                     />
                   </div>
@@ -419,8 +421,10 @@ const TravelForm = ({ onSubmit, isLoading }) => {
                       selected={formData.end_date}
                       onChange={(date) => setFormData({...formData, end_date: date})}
                       className="input w-full"
+                      wrapperClassName="w-full"
                       placeholderText="Select end date"
                       minDate={formData.start_date || new Date()}
+                      dateFormat="yyyy-MM-dd"
                       required
                     />
                   </div>
