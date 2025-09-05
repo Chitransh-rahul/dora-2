@@ -753,11 +753,14 @@ const ItineraryPreview = ({ itinerary, onDownload }) => {
   );
 };
 
-// Main App Component
+// Main App Component with Authentication Integration
 function App() {
   const [currentView, setCurrentView] = useState('hero'); // 'hero', 'form', 'loading', 'itinerary'
   const [isLoading, setIsLoading] = useState(false);
   const [itinerary, setItinerary] = useState(null);
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const { isAuthenticated } = useAuth0();
+  const { secureApiCall } = useAuth();
   
   const handleStartPlanning = () => {
     setCurrentView('form');
@@ -785,9 +788,60 @@ function App() {
     }
   };
   
-  const handleDownload = () => {
-    alert('Authentication modal will be implemented in Phase 3! For now, enjoy your preview.');
+  const handleDownload = async () => {
+    if (!itinerary?.session_id) {
+      alert('No itinerary session found.');
+      return;
+    }
+
+    if (!isAuthenticated) {
+      // Prepare itinerary for auth (extend expiry)
+      try {
+        await axios.post(`${BACKEND_URL}/api/prepare-auth/${itinerary.session_id}`);
+        setShowAuthModal(true);
+      } catch (error) {
+        console.error('Error preparing auth:', error);
+        alert('Error preparing for authentication. Please try again.');
+      }
+      return;
+    }
+
+    // User is authenticated, convert temporary itinerary to permanent
+    try {
+      const response = await secureApiCall(`${BACKEND_URL}/api/convert-itinerary`, {
+        method: 'POST',
+        body: JSON.stringify({
+          session_id: itinerary.session_id
+        })
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        alert(`Itinerary saved successfully! PDF download feature coming soon.`);
+        console.log('Conversion result:', result);
+      } else {
+        throw new Error('Failed to convert itinerary');
+      }
+    } catch (error) {
+      console.error('Error converting itinerary:', error);
+      alert('Error saving itinerary. Please try again.');
+    }
   };
+
+  // Handle post-authentication itinerary conversion
+  useEffect(() => {
+    const handlePostAuthConversion = async () => {
+      if (isAuthenticated && itinerary?.session_id && showAuthModal) {
+        setShowAuthModal(false);
+        // Small delay to ensure token is available
+        setTimeout(() => {
+          handleDownload();
+        }, 1000);
+      }
+    };
+
+    handlePostAuthConversion();
+  }, [isAuthenticated, itinerary?.session_id, showAuthModal]);
   
   return (
     <div className="min-h-screen relative">
@@ -822,6 +876,12 @@ function App() {
           </div>
         )}
       </div>
+
+      {/* Global Auth Modal */}
+      <AuthModal 
+        isOpen={showAuthModal} 
+        onClose={() => setShowAuthModal(false)} 
+      />
     </div>
   );
 }
