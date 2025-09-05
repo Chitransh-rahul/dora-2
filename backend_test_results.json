@@ -1,0 +1,74 @@
+{
+  "summary": {
+    "passed": 5,
+    "total": 7,
+    "success_rate": "71.4%",
+    "timestamp": "2025-09-05T10:36:58.144720"
+  },
+  "test_data_used": {
+    "user_name": "Test User",
+    "origin_city": "New York, NY",
+    "destinations": [
+      "Paris, France",
+      "Rome, Italy"
+    ],
+    "start_date": "2024-12-01",
+    "end_date": "2024-12-08",
+    "travel_theme": "Luxury",
+    "party_size": 2,
+    "budget_per_person": 3000,
+    "currency": "USD"
+  },
+  "backend_url": "https://travel-wizard-3.preview.emergentagent.com/api",
+  "detailed_results": [
+    {
+      "test": "Health Check",
+      "success": true,
+      "details": "Service healthy: Dora Travel API v2.0",
+      "timestamp": "2025-09-05T10:36:44.546123",
+      "response_data": null
+    },
+    {
+      "test": "Generate Itinerary",
+      "success": true,
+      "details": "Successfully generated with session_id: 595498af-854e-49bb-9de4-bcfe297d16e9",
+      "timestamp": "2025-09-05T10:36:51.848972",
+      "response_data": null
+    },
+    {
+      "test": "Retrieve by Session ID",
+      "success": true,
+      "details": "Successfully retrieved complete itinerary for session: 595498af-854e-49bb-9de4-bcfe297d16e9",
+      "timestamp": "2025-09-05T10:36:52.923533",
+      "response_data": null
+    },
+    {
+      "test": "Prepare Auth",
+      "success": true,
+      "details": "Successfully prepared auth: Itinerary prepared for authentication",
+      "timestamp": "2025-09-05T10:36:53.979645",
+      "response_data": null
+    },
+    {
+      "test": "Data Persistence",
+      "success": true,
+      "details": "Data persisted correctly after prepare-auth",
+      "timestamp": "2025-09-05T10:36:55.031842",
+      "response_data": null
+    },
+    {
+      "test": "Invalid Session ID",
+      "success": false,
+      "details": "Expected 404, got HTTP 500",
+      "timestamp": "2025-09-05T10:36:56.086407",
+      "response_data": null
+    },
+    {
+      "test": "Prepare Auth Invalid Session",
+      "success": false,
+      "details": "Expected 404, got HTTP 500",
+      "timestamp": "2025-09-05T10:36:57.142479",
+      "response_data": null
+    }
+  ]
+}
