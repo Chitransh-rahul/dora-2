@@ -39,7 +39,7 @@ EMERGENT_LLM_KEY = os.getenv("EMERGENT_LLM_KEY")
 class TravelForm(BaseModel):
     user_name: str
     origin_city: str
-    destination: str
+    destinations: List[str]  # Changed to support multiple destinations
     start_date: date
     end_date: date
     travel_theme: str
