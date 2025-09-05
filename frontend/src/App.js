@@ -168,7 +168,7 @@ const TravelForm = ({ onSubmit, isLoading }) => {
   const [formData, setFormData] = useState({
     user_name: '',
     origin_city: '',
-    destination: '',
+    destinations: [''], // Changed to array for multiple destinations
     start_date: null,
     end_date: null,
     travel_theme: '',
@@ -180,19 +180,52 @@ const TravelForm = ({ onSubmit, isLoading }) => {
   const [isFormValid, setIsFormValid] = useState(false);
 
   React.useEffect(() => {
+    const hasValidDestinations = formData.destinations.length > 0 && 
+                                formData.destinations.some(dest => dest.trim() !== '');
     const isValid = formData.user_name && 
                    formData.origin_city && 
-                   formData.destination && 
+                   hasValidDestinations && 
                    formData.start_date && 
                    formData.end_date && 
                    formData.travel_theme;
     setIsFormValid(isValid);
   }, [formData]);
 
+  const addDestination = () => {
+    setFormData({
+      ...formData,
+      destinations: [...formData.destinations, '']
+    });
+  };
+
+  const removeDestination = (index) => {
+    if (formData.destinations.length > 1) {
+      const newDestinations = formData.destinations.filter((_, i) => i !== index);
+      setFormData({
+        ...formData,
+        destinations: newDestinations
+      });
+    }
+  };
+
+  const updateDestination = (index, value) => {
+    const newDestinations = [...formData.destinations];
+    newDestinations[index] = value;
+    setFormData({
+      ...formData,
+      destinations: newDestinations
+    });
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
     if (isFormValid) {
-      onSubmit(formData);
+      // Filter out empty destinations
+      const cleanedFormData = {
+        ...formData,
+        destinations: formData.destinations.filter(dest => dest.trim() !== '')
+      };
+      onSubmit(cleanedFormData);
     }
   };
 
