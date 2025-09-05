@@ -82,15 +82,41 @@
   @apply opacity-100 translate-y-0;
 }
 
-/* Enhanced glass morphism effects with subtle neon purple */
+/* Glowing purple neon effects */
+@keyframes glow-pulse {
+  0%, 100% { 
+    opacity: 0.6;
+    transform: scale(1);
+  }
+  50% { 
+    opacity: 1;
+    transform: scale(1.05);
+  }
+}
+
+@keyframes neon-flicker {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.8; }
+}
+
+.neon-glow {
+  filter: drop-shadow(0 0 20px #6c3baa) drop-shadow(0 0 40px #6c3baa);
+}
+
+.neon-text {
+  text-shadow: 0 0 5px #6c3baa, 0 0 10px #6c3baa, 0 0 15px #6c3baa;
+}
+
+/* Enhanced glass morphism effects with purple neon */
 .glass-effect {
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  background: rgba(10, 10, 10, 0.4);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(108, 59, 170, 0.3);
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6), 
               0 0 0 1px rgba(255, 255, 255, 0.03),
-              0 0 15px rgba(108, 59, 170, 0.1);
+              0 0 15px rgba(108, 59, 170, 0.2),
+              inset 0 0 15px rgba(108, 59, 170, 0.1);
 }
 
 /* Floating header specific styles */
