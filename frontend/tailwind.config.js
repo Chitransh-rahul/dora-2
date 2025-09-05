@@ -46,9 +46,11 @@ module.exports = {
         'hero': ['4rem', { lineHeight: '1.1', fontWeight: '700' }],
         'hero-sm': ['3rem', { lineHeight: '1.1', fontWeight: '700' }],
       },
-      borderRadius: {
-        'DEFAULT': '12px',
-        'lg': '16px',
+      backgroundImage: {
+        'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
+        'gradient-conic': 'conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))',
+        'purple-glow': 'radial-gradient(circle at center, #6c3baa 0%, rgba(108, 59, 170, 0.3) 50%, transparent 100%)',
+        'neon-pulse': 'radial-gradient(circle at center, rgba(108, 59, 170, 0.4) 0%, rgba(108, 59, 170, 0.1) 50%, transparent 80%)',
       },
       boxShadow: {
         'glow': '0 0 20px rgba(255, 255, 255, 0.1)',
