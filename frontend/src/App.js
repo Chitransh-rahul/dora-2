@@ -22,49 +22,43 @@ import './App.css';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 
-// Travel theme options with modern styling
+// Travel theme options with pure glassmorphism styling
 const travelThemes = [
   { 
     value: 'Family', 
     label: 'Family', 
     icon: '👨‍👩‍👧‍👦',
-    description: 'Kid-friendly activities and accommodations',
-    gradient: 'from-blue-500/20 to-cyan-500/20'
+    description: 'Kid-friendly activities and accommodations'
   },
   { 
     value: 'Business', 
     label: 'Business', 
     icon: '💼',
-    description: 'Professional amenities and central locations',
-    gradient: 'from-gray-500/20 to-slate-500/20'
+    description: 'Professional amenities and central locations'
   },
   { 
     value: 'Luxury', 
     label: 'Luxury', 
     icon: '✨',
-    description: 'Premium experiences and fine accommodations',
-    gradient: 'from-yellow-500/20 to-amber-500/20'
+    description: 'Premium experiences and fine accommodations'
   },
   { 
     value: 'Adventure', 
     label: 'Adventure', 
     icon: '🏃‍♂️',
-    description: 'Outdoor activities and active experiences',
-    gradient: 'from-green-500/20 to-emerald-500/20'
+    description: 'Outdoor activities and active experiences'
   },
   { 
     value: 'Budget', 
     label: 'Budget', 
     icon: '💰',
-    description: 'Cost-effective options without compromising quality',
-    gradient: 'from-orange-500/20 to-red-500/20'
+    description: 'Cost-effective options without compromising quality'
   },
   { 
     value: 'Honeymoon', 
     label: 'Honeymoon', 
     icon: '💕',
-    description: 'Romantic settings and couple experiences',
-    gradient: 'from-pink-500/20 to-rose-500/20'
+    description: 'Romantic settings and couple experiences'
   }
 ];
 
