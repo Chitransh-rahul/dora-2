@@ -1,0 +1,21 @@
+{
+  "summary": {
+    "passed": 5,
+    "total": 5,
+    "success_rate": "100.0%",
+    "timestamp": "2025-09-05T11:04:10.579692"
+  },
+  "results": {
+    "auth0_jwks_accessible": true,
+    "backend_auth_validation": true,
+    "convert_endpoint_protected": true,
+    "my_itineraries_protected": true,
+    "prepare_auth_working": true,
+    "session_id": "036ee95c-6b1f-4bdd-9f1b-0bbaf66f6862"
+  },
+  "auth_config": {
+    "auth0_domain": "dev-01mtujmmqt4lkn8h.us.auth0.com",
+    "auth0_audience": "https://api.travel-itinerary.com",
+    "backend_url": "https://travel-wizard-3.preview.emergentagent.com/api"
+  }
+}
