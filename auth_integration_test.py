@@ -172,7 +172,7 @@ def test_auth0_integration():
     print("📊 AUTHENTICATION INTEGRATION TEST SUMMARY")
     print("=" * 70)
     
-    passed_tests = sum(results.values() if isinstance(v, bool) else 0 for v in results.values())
+    passed_tests = sum(1 for v in results.values() if isinstance(v, bool) and v)
     total_tests = len([v for v in results.values() if isinstance(v, bool)])
     
     print(f"✅ Auth0 JWKS Accessible: {'YES' if results['auth0_jwks_accessible'] else 'NO'}")
