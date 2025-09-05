@@ -11,47 +11,13 @@
   body {
     @apply text-foreground font-sans antialiased;
     background: #000000;
-    background-attachment: fixed;
     min-height: 100vh;
     font-feature-settings: "rlig" 1, "calt" 1;
-    position: relative;
-  }
-
-  body::before {
-    content: '';
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: radial-gradient(ellipse at center, #6c3baa 0%, rgba(108, 59, 170, 0.4) 25%, rgba(108, 59, 170, 0.1) 50%, transparent 70%);
-    pointer-events: none;
-    z-index: -2;
-  }
-
-  body::after {
-    content: '';
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: radial-gradient(circle at 20% 80%, rgba(108, 59, 170, 0.3) 0%, transparent 50%),
-                radial-gradient(circle at 80% 20%, rgba(108, 59, 170, 0.3) 0%, transparent 50%);
-    pointer-events: none;
-    z-index: -1;
-    animation: glow-pulse 8s ease-in-out infinite;
-  }
-
-  @keyframes glow-pulse {
-    0%, 100% { opacity: 0.6; }
-    50% { opacity: 1; }
   }
 
   html {
     @apply scroll-smooth;
     background: #000000;
-    background-attachment: fixed;
   }
   
   h1, h2, h3, h4, h5, h6 {
